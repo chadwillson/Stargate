@@ -1,0 +1,287 @@
+pool:
+  vmImage: 'windows-latest'
+
+trigger:
+- master
+
+variables:
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+  VKNOWN_HOST: $(known_host)
+  VSSH_PASSPHRASE: $(ssh_passphrase)
+  VSSH_PUBLIC_KEY: $(ssh_public_key)
+  VNUGET_FEED_TOKEN: $(nuget_feed_token)
+  VDOCKER_REGISTRY_SERVER_PASSWORD: $(docker_registry_server_password)
+
+name: 1.0.$(Year:yy)$(DayOfYear).$(rev:r)
+
+stages:
+- stage: Build
+  jobs:
+  - job: PackageSetup
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Install .NET 6 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
+        performMultiLevelLookup: true
+    - task: NuGetToolInstaller@1
+      inputs:
+        versionSpec: '5.11.0'
+    - task: NuGetCommand@2
+      inputs:
+        command: 'restore'
+        restoreSolution: '**/*.sln'
+        feedsToUse: 'config'
+        nugetConfigPath: './nuget.config'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: '**/*.sln'
+        publishTestResults: true
+        arguments: '--no-restore --configuration $(buildConfiguration)'
+  # - job: CodeAnalysis
+  #   dependsOn: PackageSetup
+  #   pool:
+  #     name: 'CCN Development'
+  #   steps:
+  #   - template: ./code-analysis.yml
+  #     parameters:
+  #       nuGetConfigPath: './nuget.config'
+  #       nuGetVersion: '5.11.0'
+  #       sqProjectKey: 'PathwayDrugCoveragePlugin'
+  #       sqProjectName: 'PathwayDrugCoveragePlugin'
+  #       useNuGetConfig: true
+  - job: Docker
+    dependsOn: PackageSetup
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Install .NET 6 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
+        performMultiLevelLookup: true
+    - task: Docker@2
+      displayName: 'Build API Docker Image'
+      inputs:
+        containerRegistry: 'sc_dv1crep'
+        repository: 'evicorexitpathwaypluginapi'
+        command: 'build'
+        Dockerfile: 'src/eviCore.GenericPlugins.WebApi/Dockerfile'
+        buildContext: 'src/.'
+        arguments: '--build-arg PAT=$(VNUGET_FEED_TOKEN)'
+        tags: |
+          $(Build.SourceVersion)
+          latest
+    - task: Docker@2
+      displayName: 'Push API Docker Image to Registry'
+      inputs:
+        containerRegistry: 'sc_dv1crep'
+        repository: 'evicorexitpathwaypluginapi'
+        command: 'push'
+        tags: |
+          $(Build.SourceVersion)
+          latest
+- stage: DV1
+  dependsOn: Build
+  variables:
+   resource_group_name: 'dv1_rsg_eu2_ep_pathway'
+   service_principal: 'sp_dv1_rsg_eu2_ep_pathway'
+   storage_account_name: 'dv1eppathway'
+   tfenv: 'dv1'
+   env_tag: 'Nonprod'
+  jobs:
+    - deployment: Deploy
+      environment: DV1
+      timeoutInMinutes: '360'
+      strategy:
+       runOnce:
+        deploy:
+         steps:
+           - download: none
+           - checkout: self           
+           - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+             displayName: 'Install Terraform'
+             inputs:
+              terraformVersion: '1.0.9'
+              displayName: 'Install Terraform'
+           - task: InstallSSHKey@0
+             displayName: 'Install SSH Key'
+             inputs:
+              knownHostsEntry: '$(VKNOWN_HOST)'
+              sshPublicKey: '$(VSSH_PUBLIC_KEY)'
+              sshPassphrase: '$(VSSH_PASSPHRASE)'
+              sshKeySecureFile: 'strikers_rsa'
+           - task: TerraformTaskV2@2
+             displayName: 'Terraform init'
+             inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: 'terraform'
+              backendServiceArm: 'sp_dv1_rsg_eu2_ep_pathway'
+              backendAzureRmResourceGroupName: 'dv1_rsg_eu2_ep_pathway'
+              backendAzureRmStorageAccountName: 'dv1eppathway'
+              backendAzureRmContainerName: 'terraform'
+              backendAzureRmKey: 'exitpathwayplugin.tfstate'
+           - task: TerraformTaskV2@2
+             displayName: 'Terraform Apply'
+             name: TerraformApply
+             inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: 'terraform'
+              commandOptions: '-var "container_registry_password=$(VDOCKER_REGISTRY_SERVER_PASSWORD)" -var "container_image_version=$(Build.SourceVersion)" -var-file environment-variables/dv1.tfvars -auto-approve'
+              environmentServiceNameAzureRM: 'sp_dv1_rsg_eu2_ep_pathway'
+- stage: IN1
+  dependsOn: DV1
+  variables:
+   resource_group_name: 'in1_rsg_eu2_ep_pathway'
+   service_principal: 'sp_in1_rsg_eu2_ep_pathway'
+   storage_account_name: 'in1eppathway'
+   tfenv: 'in1'
+   env_tag: 'Nonprod'
+  jobs:
+    - deployment: Deploy
+      environment: IN1
+      timeoutInMinutes: '360'
+      strategy:
+       runOnce:
+        deploy:
+         steps:
+           - download: none
+           - checkout: self          
+           - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+             displayName: 'Install Terraform'
+             inputs:
+              terraformVersion: '1.0.9'
+              displayName: 'Install Terraform'
+           - task: InstallSSHKey@0
+             displayName: 'Install SSH Key'
+             inputs:
+              knownHostsEntry: '$(VKNOWN_HOST)'
+              sshPublicKey: '$(VSSH_PUBLIC_KEY)'
+              sshPassphrase: '$(VSSH_PASSPHRASE)'
+              sshKeySecureFile: 'strikers_rsa'
+           - task: TerraformTaskV2@2
+             displayName: 'Terraform init'
+             inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: 'terraform'
+              backendServiceArm: 'sp_in1_rsg_eu2_ep_pathway'
+              backendAzureRmResourceGroupName: 'in1_rsg_eu2_ep_pathway'
+              backendAzureRmStorageAccountName: 'in1eppathway'
+              backendAzureRmContainerName: 'terraform'
+              backendAzureRmKey: 'exitpathwayplugin.tfstate'
+           - task: TerraformTaskV2@2
+             displayName: 'Terraform Apply'
+             name: TerraformApply
+             inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: 'terraform'
+              commandOptions: '-var "container_registry_password=$(VDOCKER_REGISTRY_SERVER_PASSWORD)" -var "container_image_version=$(Build.SourceVersion)" -var-file environment-variables/in1.tfvars -auto-approve'
+              environmentServiceNameAzureRM: 'sp_in1_rsg_eu2_ep_pathway'
+- stage: UT1
+  dependsOn: IN1
+  variables:
+   resource_group_name: 'ut1_rsg_eu2_ep_pathway'
+   service_principal: 'sp_ut1_rsg_eu2_ep_pathway'
+   storage_account_name: 'ut1eppathway'
+   tfenv: 'ut1'
+   env_tag: 'Nonprod'
+  jobs:
+    - deployment: Deploy
+      environment: UT1
+      timeoutInMinutes: '360'
+      strategy:
+       runOnce:
+        deploy:
+         steps:
+           - download: none
+           - checkout: self          
+           - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+             displayName: 'Install Terraform'
+             inputs:
+              terraformVersion: '1.0.9'
+              displayName: 'Install Terraform'
+           - task: InstallSSHKey@0
+             displayName: 'Install SSH Key'
+             inputs:
+              knownHostsEntry: '$(VKNOWN_HOST)'
+              sshPublicKey: '$(VSSH_PUBLIC_KEY)'
+              sshPassphrase: '$(VSSH_PASSPHRASE)'
+              sshKeySecureFile: 'strikers_rsa'
+           - task: TerraformTaskV2@2
+             displayName: 'Terraform init'
+             inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: 'terraform'
+              backendServiceArm: 'sp_ut1_rsg_eu2_ep_pathway'
+              backendAzureRmResourceGroupName: 'ut1_rsg_eu2_ep_pathway'
+              backendAzureRmStorageAccountName: 'ut1eppathway'
+              backendAzureRmContainerName: 'terraform'
+              backendAzureRmKey: 'exitpathwayplugin.tfstate'
+           - task: TerraformTaskV2@2
+             displayName: 'Terraform Apply'
+             name: TerraformApply
+             inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: 'terraform'
+              commandOptions: '-var "container_registry_password=$(VDOCKER_REGISTRY_SERVER_PASSWORD)" -var "container_image_version=$(Build.SourceVersion)" -var-file environment-variables/ut1.tfvars -auto-approve'
+              environmentServiceNameAzureRM: 'sp_ut1_rsg_eu2_ep_pathway'
+- stage: PD1
+  dependsOn: UT1
+  variables:
+   resource_group_name: 'pd1_rsg_eu2_ep_pathway'
+   service_principal: 'sp_pd1_rsg_eu2_ep_pathway'
+   storage_account_name: 'pd1eppathway'
+   tfenv: 'pd1eu2'
+   env_tag: 'Production'
+  jobs:
+    - deployment: Deploy
+      environment: PD1-EU2
+      timeoutInMinutes: '360'
+      strategy:
+       runOnce:
+        deploy:
+         steps:
+           - download: none
+           - checkout: self           
+           - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+             displayName: 'Install Terraform'
+             inputs:
+              terraformVersion: '1.0.9'
+              displayName: 'Install Terraform'
+           - task: InstallSSHKey@0
+             displayName: 'Install SSH Key'
+             inputs:
+              knownHostsEntry: '$(VKNOWN_HOST)'
+              sshPublicKey: '$(VSSH_PUBLIC_KEY)'
+              sshPassphrase: '$(VSSH_PASSPHRASE)'
+              sshKeySecureFile: 'strikers_rsa'
+           - task: TerraformTaskV2@2
+             displayName: 'Terraform init'
+             inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: 'terraform'
+              backendServiceArm: 'sp_pd1_rsg_eu2_ep_pathway'
+              backendAzureRmResourceGroupName: 'pd1_rsg_eu2_ep_pathway'
+              backendAzureRmStorageAccountName: 'pd1eppathway'
+              backendAzureRmContainerName: 'terraform'
+              backendAzureRmKey: 'exitpathwayplugin.tfstate'
+           - task: TerraformTaskV2@2
+             displayName: 'Terraform Apply'
+             name: TerraformApply
+             inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: 'terraform'
+              commandOptions: '-var "container_registry_password=$(VDOCKER_REGISTRY_SERVER_PASSWORD)" -var "container_image_version=$(Build.SourceVersion)" -var-file environment-variables/pd1eu2.tfvars -auto-approve'
+              environmentServiceNameAzureRM: 'sp_pd1_rsg_eu2_ep_pathway'

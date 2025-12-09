@@ -1,0 +1,69 @@
+name: Infra Plan & Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment (dev/qa/prod)"
+        required: true
+        default: dev
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-plan-apply.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  TF_VERSION: 1.8.5
+  WORKING_DIR: infra
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - name: Terraform Init
+        run: terraform -chdir=${{ env.WORKING_DIR }} init -backend-config=backend.hcl
+      - name: Terraform Validate
+        run: terraform -chdir=${{ env.WORKING_DIR }} validate
+      - name: Terraform Plan
+        run: terraform -chdir=${{ env.WORKING_DIR }} plan -var-file=environments/${{ github.event.inputs.env || 'dev' }}.tfvars -out=tfplan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: infra/tfplan
+
+  apply:
+    needs: plan
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.env }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: infra
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - name: Terraform Init
+        run: terraform -chdir=${{ env.WORKING_DIR }} init -backend-config=backend.hcl
+      - name: Terraform Apply
+        run: terraform -chdir=${{ env.WORKING_DIR }} apply tfplan

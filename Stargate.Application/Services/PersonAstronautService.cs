@@ -73,7 +73,33 @@ namespace Stargate.Application.Services
 
             return new PersonAstronautResponse()
             {
-                PersonId = newPerson.Id
+                PersonId = newPerson.Id,
+                Name = newPerson.Name
+            };
+        }
+
+        public async Task<PersonAstronautResponse> UpdatePerson(string name, PersonRequest request, CancellationToken cancellationToken)
+        {
+            var person = await _unitOfWork.PersonAstronauts.GetByNameAsync(name, cancellationToken);
+
+            if (person == null)
+            {
+                return new PersonAstronautResponse
+                {
+                    Success = false,
+                    Message = "Person not found",
+                    ResponseCode = 404
+                };
+            }
+
+            person.Name = request.Name;
+            await _unitOfWork.PersonAstronauts.UpdateAsync(person, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return new PersonAstronautResponse
+            {
+                PersonId = person.Id,
+                Name = person.Name
             };
         }
     }

@@ -1,7 +1,7 @@
 <Solution>
   <Project Path="Stargate.Api/Stargate.Api.csproj" />
   <Project Path="Stargate.Application/Stargate.Application.csproj" />
-  <Project Path="Stargate.Database/Stargate.Database.sqlproj">
+  <Project Path="Stargate.Database/Stargate.Database.sqlproj" Id="f0774b5a-47d6-4f6e-a6c5-b4d81e482436">
     <Build />
     <Deploy />
   </Project>

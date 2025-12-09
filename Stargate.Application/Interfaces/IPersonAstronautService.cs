@@ -9,5 +9,7 @@ namespace Stargate.Application.Interfaces
         Task<PersonAstronautResponse> GetPersonByName(string name, CancellationToken cancellationToken);
 
         Task<PersonAstronautResponse> CreatePerson(PersonRequest request, CancellationToken cancellationToken);
+
+        Task<PersonAstronautResponse> UpdatePerson(string name, PersonRequest request, CancellationToken cancellationToken);
     }
 }

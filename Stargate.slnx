@@ -1,0 +1,12 @@
+<Solution>
+  <Project Path="Stargate.Api/Stargate.Api.csproj" />
+  <Project Path="Stargate.Application/Stargate.Application.csproj" />
+  <Project Path="Stargate.Database/Stargate.Database.sqlproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="Stargate.Domain/Stargate.Domain.csproj" />
+  <Project Path="Stargate.IntegrationTests/Stargate.IntegrationTests.csproj" />
+  <Project Path="Stargate.Repository/Stargate.Repository.csproj" />
+  <Project Path="Stargate.UnitTests/Stargate.UnitTests.csproj" />
+</Solution>

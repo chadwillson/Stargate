@@ -57,10 +57,14 @@
   <ItemGroup>
     <Folder Include="Properties" />
     <Folder Include="Tables" />
+    <Folder Include="Post-Deployment" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="Tables\Person.sql" />
     <Build Include="Tables\AstronautDetail.sql" />
     <Build Include="Tables\AstronautDuty.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="Post-Deployment\Script.PostDeployment.sql" />
   </ItemGroup>
 </Project>

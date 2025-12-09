@@ -1,0 +1,70 @@
+name: Build SQL DACPAC
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Stargate.Database/**"
+      - ".github/workflows/db-ci.yml"
+  pull_request:
+    paths:
+      - "Stargate.Database/**"
+      - ".github/workflows/db-ci.yml"
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Deploy DACPAC after build (requires env approvals)"
+        default: false
+        type: boolean
+      env:
+        description: "Environment name (dev/qa/prod)"
+        default: dev
+        type: choice
+        options: [dev, qa, prod]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  SQLPROJ_PATH: Stargate.Database/Stargate.Database.sqlproj
+  DACPAC_PATH: Stargate.Database/bin/Release/Stargate.Database.dacpac
+
+jobs:
+  build-dacpac:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+      - name: Build DACPAC
+        run: msbuild ${{ env.SQLPROJ_PATH }} /p:Configuration=Release /t:Build
+      - name: Upload DACPAC
+        uses: actions/upload-artifact@v4
+        with:
+          name: stargate-dacpac
+          path: ${{ env.DACPAC_PATH }}
+
+  deploy-dacpac:
+    needs: build-dacpac
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
+    runs-on: windows-latest
+    environment: ${{ github.event.inputs.env }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: stargate-dacpac
+          path: artifacts
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy DACPAC to Azure SQL
+        uses: azure/sql-action@v2
+        with:
+          connection-string: ${{ secrets[format('SQL_CONN_STR_{0}', toUpper(github.event.inputs.env || 'dev'))] }}
+          path: artifacts/Stargate.Database.dacpac
+          action: publish
+          # Optional: arguments: "/p:BlockOnPossibleDataLoss=false"

@@ -1,0 +1,44 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.cs"
+      - "**/*.csproj"
+      - "**/*.slnx"
+      - "**/*.sqlproj"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "**/*.cs"
+      - "**/*.csproj"
+      - "**/*.slnx"
+      - "**/*.sqlproj"
+      - ".github/workflows/ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Restore
+        run: |
+          dotnet restore Stargate.Api/Stargate.Api.csproj
+          dotnet restore Stargate.Domain/Stargate.Domain.csproj
+          dotnet restore Stargate.Repository/Stargate.Repository.csproj
+          dotnet restore Stargate.Application/Stargate.Application.csproj
+      - name: Build
+        run: |
+          dotnet build Stargate.Api/Stargate.Api.csproj --configuration Release --no-restore
+          dotnet build Stargate.Application/Stargate.Application.csproj --configuration Release --no-restore
+      - name: Test
+        run: |
+          dotnet test Stargate.UnitTests/Stargate.UnitTests.csproj --configuration Release --no-build
+          dotnet test Stargate.IntegrationTests/Stargate.IntegrationTests.csproj --configuration Release --no-build

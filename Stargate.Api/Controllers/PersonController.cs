@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +7,9 @@ using Stargate.Domain.Dtos;
 
 namespace Stargate.Api.Controllers
 {
-    public class PersonController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class PersonController : ControllerBase
     {
         private readonly IPersonAstronautService _personAstronautService;
 
@@ -16,7 +18,7 @@ namespace Stargate.Api.Controllers
             _personAstronautService = personAstronautServic;
         }
 
-        [HttpGet("")]
+        [HttpGet]
         public async Task<IActionResult> GetPeople()
         {
             try
@@ -58,7 +60,7 @@ namespace Stargate.Api.Controllers
             }
         }
 
-        [HttpPost("")]
+        [HttpPost]
         public async Task<IActionResult> CreatePerson([FromBody] PersonRequest request)
         {
             try
@@ -77,7 +79,27 @@ namespace Stargate.Api.Controllers
                     ResponseCode = (int)HttpStatusCode.InternalServerError
                 });
             }
+        }
 
+        [HttpPut("{name}")]
+        public async Task<IActionResult> UpdatePerson(string name, [FromBody] PersonRequest request)
+        {
+            try
+            {
+                CancellationToken cancellationToken = HttpContext.RequestAborted;
+                var result = await _personAstronautService.UpdatePerson(name, request, cancellationToken);
+
+                return this.GetResponse(result);
+            }
+            catch (Exception ex)
+            {
+                return this.GetResponse(new BaseResponse()
+                {
+                    Message = ex.Message,
+                    Success = false,
+                    ResponseCode = (int)HttpStatusCode.InternalServerError
+                });
+            }
         }
     }
 }

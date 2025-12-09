@@ -90,7 +90,7 @@ namespace Stargate.Application.Services
 
                 if (request.DutyTitle == "RETIRED")
                 {
-                    astronautDetail.CareerEndDate = request.DutyStartDate.Date;
+                    astronautDetail.CareerEndDate = request.DutyStartDate.AddDays(-1).Date;
                 }
 
                 await _unitOfWork.AstronautDetails.AddAsync(astronautDetail, cancellationToken);

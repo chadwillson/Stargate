@@ -1,6 +1,9 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Stargate.Application.Interfaces;
 using Stargate.Application.Services;
+using Stargate.Application.Validators;
 using Stargate.Repository;
 using Stargate.Repository.Interfaces;
 using Stargate.Repository.Repositories;
@@ -10,8 +13,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 // Configure Database
+var useInMemory = builder.Environment.IsEnvironment("IntegrationTest");
 builder.Services.AddDbContext<StargateContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (useInMemory)
+    {
+        options.UseInMemoryDatabase("IntegrationTestsDb");
+    }
+    else
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+});
 
 // Register Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -20,17 +33,19 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPersonAstronautService, PersonAstronautService>();
 builder.Services.AddScoped<IAstronautDutyService, AstronautDutyService>();
 
+// Register Validators
+builder.Services.AddValidatorsFromAssemblyContaining<PersonRequestValidator>();
+builder.Services.AddFluentValidationAutoValidation();
+
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
@@ -39,3 +54,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

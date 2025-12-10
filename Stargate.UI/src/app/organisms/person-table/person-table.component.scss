@@ -1,0 +1,56 @@
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  th {
+    background: #f5f5f5;
+    font-weight: 600;
+    color: #333;
+  }
+
+  td {
+    color: #212529;
+    font-weight: 400;
+  }
+
+  tbody tr:hover {
+    background: #fafafa;
+  }
+
+  .empty-state, .loading-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+
+    &:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+    }
+  }
+
+  app-button {
+    margin-right: 8px;
+  }
+}

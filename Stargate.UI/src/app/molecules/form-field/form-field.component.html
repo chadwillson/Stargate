@@ -1,0 +1,11 @@
+<div class="form-group">
+  <label class="form-label">{{ label }}</label>
+  <app-text-input
+    [type]="type"
+    [name]="name"
+    [value]="value"
+    [placeholder]="placeholder"
+    (valueChange)="valueChange.emit($event)">
+  </app-text-input>
+  <div *ngIf="error" class="alert alert-danger mt-2">{{ error }}</div>
+</div>

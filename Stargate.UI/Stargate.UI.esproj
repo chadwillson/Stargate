@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.784122">
+  <PropertyGroup>
+    <StartupCommand>npm start</StartupCommand>
+    <JavaScriptTestRoot>src\</JavaScriptTestRoot>
+    <JavaScriptTestFramework>Jasmine</JavaScriptTestFramework>
+    <ShouldRunBuildScript>false</ShouldRunBuildScript>
+    <BuildCommand>npm run build</BuildCommand>
+    <CleanCommand>npm run clean</CleanCommand>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="src\app\" />
+    <Folder Include="src\assets\" />
+    <Folder Include="src\environments\" />
+  </ItemGroup>
+</Project>

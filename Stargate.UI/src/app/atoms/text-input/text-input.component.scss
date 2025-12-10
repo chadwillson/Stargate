@@ -1,0 +1,12 @@
+.form-control {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.form-control:focus {
+  outline: 2px solid var(--accent);
+}

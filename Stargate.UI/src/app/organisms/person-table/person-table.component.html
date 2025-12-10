@@ -1,0 +1,54 @@
+<div class="table-wrapper">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Current Rank</th>
+        <th>Current Duty Title</th>
+        <th>Career Start Date</th>
+        <th>Career End Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody *ngIf="!loading && people.length > 0">
+      <tr *ngFor="let person of people">
+        <ng-container *ngIf="editingName !== person.name; else editMode">
+          <td>{{ person.personId }}</td>
+          <td>{{ person.name }}</td>
+          <td>{{ person.currentRank || '-' }}</td>
+          <td>{{ person.currentDutyTitle || '-' }}</td>
+          <td>{{ person.careerStartDate ? (person.careerStartDate | date: 'short') : '-' }}</td>
+          <td>{{ person.careerEndDate ? (person.careerEndDate | date: 'short') : '-' }}</td>
+          <td>
+            <app-button kind="secondary" size="small" (pressed)="onEdit(person)">Edit</app-button>
+          </td>
+        </ng-container>
+        <ng-template #editMode>
+          <td>{{ person.personId }}</td>
+          <td>
+            <input
+              [(ngModel)]="editForm.name"
+              class="form-control"
+              placeholder="Name" />
+          </td>
+          <td colspan="4">-</td>
+          <td>
+            <app-button kind="primary" size="small" (pressed)="onSave(person.name)">Save</app-button>
+            <app-button kind="secondary" size="small" (pressed)="onCancel()">Cancel</app-button>
+          </td>
+        </ng-template>
+      </tr>
+    </tbody>
+    <tbody *ngIf="!loading && people.length === 0">
+      <tr>
+        <td colspan="7" class="empty-state">No people found</td>
+      </tr>
+    </tbody>
+    <tbody *ngIf="loading">
+      <tr>
+        <td colspan="7" class="loading-state">Loading...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

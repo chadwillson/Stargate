@@ -8,5 +8,9 @@
   <Project Path="Stargate.Domain/Stargate.Domain.csproj" />
   <Project Path="Stargate.IntegrationTests/Stargate.IntegrationTests.csproj" />
   <Project Path="Stargate.Repository/Stargate.Repository.csproj" />
+  <Project Path="Stargate.UI/Stargate.UI.esproj">
+    <Build />
+    <Deploy />
+  </Project>
   <Project Path="Stargate.UnitTests/Stargate.UnitTests.csproj" />
 </Solution>

@@ -1,0 +1,32 @@
+<app-default-template pageTitle="Person Management">
+  <ng-container page-actions>
+    <app-button kind="primary" (pressed)="toggleCreating()">{{ isCreating ? 'Cancel' : 'New Person' }}</app-button>
+  </ng-container>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="isCreating" class="create-form">
+    <h3>Create New Person</h3>
+    <div class="form-row">
+      <input
+        [(ngModel)]="newPerson.name"
+        placeholder="Name"
+        class="form-control"
+        [disabled]="loading" />
+      <app-button kind="primary" (pressed)="onCreatePerson()" [disabled]="loading || !newPerson.name">
+        Create
+      </app-button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <app-person-table
+      [people]="rows"
+      [loading]="loading"
+      [editingName]="editingName"
+      (updatePerson)="onUpdatePerson($event.name, $event.updates)"
+      (startEdit)="startEditing($event)"
+      (cancelEdit)="cancelEdit()">
+    </app-person-table>
+  </div>
+</app-default-template>

@@ -37,5 +37,14 @@ namespace Stargate.Repository.Repositories
                 .Include(p => p.AstronautDetail)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<IEnumerable<PersonAstronautEntity>> SearchByNameWithAllRelationsAsync(string searchTerm, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .Include(p => p.AstronautDetail)
+                .Include(p => p.AstronautDuties)
+                .Where(p => EF.Functions.Like(p.Name, $"%{searchTerm}%"))
+                .ToListAsync(cancellationToken);
+        }
     }
 }

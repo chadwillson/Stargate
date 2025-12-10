@@ -1,0 +1,53 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Value</th>
+      <th class="actions-col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngIf="loading">
+      <td colspan="4" class="loading-cell">Loading...</td>
+    </tr>
+    <tr *ngIf="!loading && rows.length === 0">
+      <td colspan="4" class="empty-cell">No items found. Click "New Item" to create one.</td>
+    </tr>
+    <tr *ngFor="let row of rows" [class.editing]="editingId === row.id">
+      <td>{{ row.id }}</td>
+      <td>
+        <input 
+          *ngIf="editingId === row.id" 
+          [(ngModel)]="editForm[row.id].name" 
+          class="edit-input" />
+        <span *ngIf="editingId !== row.id">{{ row.name }}</span>
+      </td>
+      <td>
+        <input 
+          *ngIf="editingId === row.id" 
+          [(ngModel)]="editForm[row.id].value" 
+          class="edit-input" />
+        <span *ngIf="editingId !== row.id">{{ row.value }}</span>
+      </td>
+      <td class="actions-cell">
+        <div *ngIf="editingId !== row.id" class="action-buttons">
+          <button class="btn-action btn-edit" (click)="onStartEdit(row)" [disabled]="loading">
+            Edit
+          </button>
+          <button class="btn-action btn-delete" (click)="onDelete(row.id)" [disabled]="loading">
+            Delete
+          </button>
+        </div>
+        <div *ngIf="editingId === row.id" class="action-buttons">
+          <button class="btn-action btn-save" (click)="onSaveEdit(row.id)" [disabled]="loading">
+            Save
+          </button>
+          <button class="btn-action btn-cancel" (click)="onCancelEdit(row.id)" [disabled]="loading">
+            Cancel
+          </button>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

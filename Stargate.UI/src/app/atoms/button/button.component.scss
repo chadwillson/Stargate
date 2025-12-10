@@ -1,0 +1,36 @@
+.btn {
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-base);
+  border-color: var(--text-secondary);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -16,63 +16,68 @@ namespace Stargate.Application.Services
 
         public async Task<AstronautDutiesListResponse> GetAstronautDutiesByName(string name, CancellationToken cancellationToken)
         {
-            var person = await _unitOfWork.PersonAstronauts.GetByNameWithAllRelationsAsync(name, cancellationToken);
+            var people = await _unitOfWork.PersonAstronauts.SearchByNameWithAllRelationsAsync(name, cancellationToken);
 
-            if (person == null)
+            if (!people.Any())
             {
                 return new AstronautDutiesListResponse
                 {
                     Success = false,
-                    Message = "Person not found",
+                    Message = "No people found matching the search term",
                     ResponseCode = 404
                 };
             }
 
-            var response = new AstronautDutiesByNameResponse
+            var duties = new List<AstronautDutiesByNameResponse>();
+
+            foreach (var person in people)
             {
-                Person = new PersonAstronautResponse
+                var response = new AstronautDutiesByNameResponse
                 {
-                    PersonId = person.Id,
-                    Name = person.Name,
-                    CurrentRank = person.AstronautDetail?.CurrentRank ?? string.Empty,
-                    CurrentDutyTitle = person.AstronautDetail?.CurrentDutyTitle ?? string.Empty,
-                    CareerStartDate = person.AstronautDetail?.CareerStartDate,
-                    CareerEndDate = person.AstronautDetail?.CareerEndDate
-                },
-                AstronautDuties = person.AstronautDuties.Select(duty => new AstronautDutyResponse
-                {
-                    Id = duty.Id,
-                    PersonId = duty.PersonId,
-                    Rank = duty.Rank,
-                    DutyTitle = duty.DutyTitle,
-                    DutyStartDate = duty.DutyStartDate,
-                    DutyEndDate = duty.DutyEndDate
-                }).ToList()
-            };
+                    Person = new PersonAstronautResponse
+                    {
+                        PersonId = person.Id,
+                        Name = person.Name,
+                        CurrentRank = person.AstronautDetail?.CurrentRank ?? string.Empty,
+                        CurrentDutyTitle = person.AstronautDetail?.CurrentDutyTitle ?? string.Empty,
+                        CareerStartDate = person.AstronautDetail?.CareerStartDate,
+                        CareerEndDate = person.AstronautDetail?.CareerEndDate
+                    },
+                    AstronautDuties = person.AstronautDuties.Select(duty => new AstronautDutyResponse
+                    {
+                        Id = duty.Id,
+                        PersonId = duty.PersonId,
+                        Rank = duty.Rank,
+                        DutyTitle = duty.DutyTitle,
+                        DutyStartDate = duty.DutyStartDate,
+                        DutyEndDate = duty.DutyEndDate
+                    }).ToList()
+                };
+
+                duties.Add(response);
+            }
 
             return new AstronautDutiesListResponse
             {
-                Duties = new List<AstronautDutiesByNameResponse> { response }
+                Duties = duties
             };
         }
 
         public async Task<CreateAstronautDutyResponse> CreateAstronautDuty(CreateAstronautDutyResponse request, CancellationToken cancellationToken)
         {
-            // Get the person by name
+            // Get or create the person by name
             var person = await _unitOfWork.PersonAstronauts.GetByNameAsync(request.Name, cancellationToken);
 
             if (person == null)
             {
-                return new CreateAstronautDutyResponse
+                // Create new person
+                person = new PersonAstronautEntity
                 {
-                    Name = request.Name,
-                    Rank = request.Rank,
-                    DutyTitle = request.DutyTitle,
-                    DutyStartDate = request.DutyStartDate,
-                    Success = false,
-                    Message = "Person not found",
-                    ResponseCode = 404
+                    Name = request.Name
                 };
+
+                await _unitOfWork.PersonAstronauts.AddAsync(person, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 
             // Get or create astronaut detail

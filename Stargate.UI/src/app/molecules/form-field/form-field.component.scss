@@ -1,0 +1,21 @@
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+.alert {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+.alert-danger {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ffc1c1;
+  border: 1px solid var(--danger);
+}

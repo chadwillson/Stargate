@@ -45,7 +45,12 @@ namespace Stargate.Application.Services
 
             if (result == null)
             {
-                return new PersonAstronautResponse();
+                return new PersonAstronautResponse
+                {
+                    Success = false,
+                    Message = "Person not found",
+                    ResponseCode = 404
+                };
             }
 
             var map = new PersonAstronautResponse

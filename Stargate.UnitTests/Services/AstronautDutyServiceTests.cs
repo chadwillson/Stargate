@@ -47,8 +47,8 @@ namespace Stargate.UnitTests.Services
                     new AstronautDutyEntity { Id = 1, Rank = "Captain", DutyTitle = "Commander", DutyStartDate = DateTime.Now }
                 }
             };
-            _mockPersonRepo.Setup(x => x.GetByNameWithAllRelationsAsync("John Doe", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(person);
+            _mockPersonRepo.Setup(x => x.SearchByNameWithAllRelationsAsync("John Doe", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<PersonAstronautEntity> { person });
 
             // Act
             var result = await _service.GetAstronautDutiesByName("John Doe", CancellationToken.None);
@@ -65,8 +65,8 @@ namespace Stargate.UnitTests.Services
         public async Task GetAstronautDutiesByName_WhenPersonDoesNotExist_ShouldReturnNotFound()
         {
             // Arrange
-            _mockPersonRepo.Setup(x => x.GetByNameWithAllRelationsAsync("Unknown", It.IsAny<CancellationToken>()))
-                .ReturnsAsync((PersonAstronautEntity?)null);
+            _mockPersonRepo.Setup(x => x.SearchByNameWithAllRelationsAsync("Unknown", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<PersonAstronautEntity>());
 
             // Act
             var result = await _service.GetAstronautDutiesByName("Unknown", CancellationToken.None);
@@ -75,30 +75,45 @@ namespace Stargate.UnitTests.Services
             result.Should().NotBeNull();
             result.Success.Should().BeFalse();
             result.ResponseCode.Should().Be(404);
-            result.Message.Should().Be("Person not found");
+            result.Message.Should().Be("No people found matching the search term");
         }
 
         [TestMethod]
-        public async Task CreateAstronautDuty_WhenPersonDoesNotExist_ShouldReturnNotFound()
+        public async Task CreateAstronautDuty_WhenPersonDoesNotExist_ShouldCreatePerson()
         {
             // Arrange
             var request = new CreateAstronautDutyResponse
             {
-                Name = "Unknown",
+                Name = "New Person",
                 Rank = "Captain",
                 DutyTitle = "Commander",
                 DutyStartDate = DateTime.Now
             };
-            _mockPersonRepo.Setup(x => x.GetByNameAsync("Unknown", It.IsAny<CancellationToken>()))
+            _mockPersonRepo.Setup(x => x.GetByNameAsync("New Person", It.IsAny<CancellationToken>()))
                 .ReturnsAsync((PersonAstronautEntity?)null);
+            
+            PersonAstronautEntity? capturedPerson = null;
+            _mockPersonRepo.Setup(x => x.AddAsync(It.IsAny<PersonAstronautEntity>(), It.IsAny<CancellationToken>()))
+                .Callback<PersonAstronautEntity, CancellationToken>((p, ct) => {
+                    capturedPerson = p;
+                    p.Id = 99; // Simulate database assigning ID
+                });
+
+            _mockDetailRepo.Setup(x => x.GetByPersonIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((AstronautDetailEntity?)null);
+            _mockDutyRepo.Setup(x => x.GetByPersonIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<AstronautDutyEntity>());
 
             // Act
             var result = await _service.CreateAstronautDuty(request, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
-            result.Success.Should().BeFalse();
-            result.ResponseCode.Should().Be(404);
+            result.Success.Should().BeTrue();
+            capturedPerson.Should().NotBeNull();
+            capturedPerson!.Name.Should().Be("New Person");
+            _mockPersonRepo.Verify(x => x.AddAsync(It.IsAny<PersonAstronautEntity>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockUnitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         }
 
         [TestMethod]

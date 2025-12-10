@@ -14,11 +14,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configure Database
 var useInMemory = builder.Environment.IsEnvironment("IntegrationTest");
+var databaseProvider = builder.Configuration.GetValue<string>("DatabaseProvider") ?? "SqlServer";
+
 builder.Services.AddDbContext<StargateContext>(options =>
 {
     if (useInMemory)
     {
         options.UseInMemoryDatabase("IntegrationTestsDb");
+    }
+    else if (databaseProvider == "Sqlite")
+    {
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
     }
     else
     {
@@ -41,13 +47,39 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200", "http://localhost:61503")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+// Initialize database for development with SQLite
+if (builder.Environment.IsDevelopment() && databaseProvider == "Sqlite")
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<StargateContext>();
+
+    // Ensure database is created
+    context.Database.EnsureCreated();
+
+    // Seed initial data
+    DatabaseSeeder.Seed(context);
+}
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAngularApp");
 
 app.UseAuthorization();
 

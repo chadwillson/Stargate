@@ -1,0 +1,19 @@
+<div class="card">
+  <h2 class="h5">{{ title }}</h2>
+  <form (ngSubmit)="onSubmit()">
+    <app-form-field
+      label="Email"
+      name="email"
+      type="email"
+      [(value)]="model.email">
+    </app-form-field>
+    <app-form-field
+      label="Password"
+      name="password"
+      type="password"
+      [(value)]="model.password">
+    </app-form-field>
+    <app-button type="submit" kind="primary" class="w-100">Continue</app-button>
+    <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+  </form>
+</div>

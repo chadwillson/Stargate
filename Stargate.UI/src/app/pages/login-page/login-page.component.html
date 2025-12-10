@@ -1,0 +1,22 @@
+<app-default-template>
+  <div class="login-container">
+    <div class="login-card">
+      <h1 class="login-title">Stargate Portal</h1>
+      <p class="login-subtitle">Please sign in to continue</p>
+
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <app-auth-form
+        title="Sign In"
+        [error]="error"
+        (submitAuth)="onSubmit($event)">
+      </app-auth-form>
+
+      <div *ngIf="loading" class="loading-overlay">
+        <p>Authenticating...</p>
+      </div>
+    </div>
+  </div>
+</app-default-template>

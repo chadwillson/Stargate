@@ -304,6 +304,99 @@ public sealed class AstronautDutyEndpointTests
         payload!.DutyStartDate.Should().BeCloseTo(futureDate, TimeSpan.FromSeconds(1));
     }
 
+    [TestMethod]
+    public async Task CreateAstronautDuty_WithRetiredTitle_ShouldSetCareerEndDateOneDayBeforeRetirementDate()
+    {
+        // Arrange - Create person with initial duty
+        var person = await SeedPersonAsync(new PersonAstronautEntity { Name = "Colonel Jack O'Neill" });
+        await SeedAstronautDetailAsync(new AstronautDetailEntity
+        {
+            PersonId = person.Id,
+            CurrentRank = "Colonel",
+            CurrentDutyTitle = "SG-1 Team Leader",
+            CareerStartDate = new DateTime(2020, 1, 1)
+        });
+
+        // Create initial active duty
+        await SeedAstronautDutyAsync(new AstronautDutyEntity
+        {
+            PersonId = person.Id,
+            Rank = "Colonel",
+            DutyTitle = "SG-1 Team Leader",
+            DutyStartDate = new DateTime(2020, 1, 1)
+        });
+
+        // Act - Create RETIRED duty
+        var retiredDuty = new CreateAstronautDutyResponse
+        {
+            Name = "Colonel Jack O'Neill",
+            Rank = "Brigadier General",
+            DutyTitle = "RETIRED",
+            DutyStartDate = new DateTime(2024, 6, 15)
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/astronautduty", retiredDuty);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<CreateAstronautDutyResponse>();
+        payload.Should().NotBeNull();
+        payload!.Success.Should().BeTrue();
+        payload.DutyTitle.Should().Be("RETIRED");
+
+        // Verify via database that the career end date is set correctly
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
+
+        var detail = await db.AstronautDetails.FirstAsync(d => d.PersonId == person.Id);
+        detail.Should().NotBeNull();
+        detail.CareerEndDate.Should().Be(new DateTime(2024, 6, 14), "Career end date should be one day before retirement date");
+        detail.CurrentDutyTitle.Should().Be("RETIRED");
+        detail.CurrentRank.Should().Be("Brigadier General");
+
+        // Verify previous duty was ended
+        var duties = await db.AstronautDuties.Where(d => d.PersonId == person.Id).ToListAsync();
+        duties.Should().HaveCount(2);
+
+        var previousDuty = duties.FirstOrDefault(d => d.DutyTitle == "SG-1 Team Leader");
+        previousDuty.Should().NotBeNull();
+        previousDuty!.DutyEndDate.Should().Be(new DateTime(2024, 6, 14), "Previous duty should end one day before retirement");
+
+        var retiredDutyEntity = duties.FirstOrDefault(d => d.DutyTitle == "RETIRED");
+        retiredDutyEntity.Should().NotBeNull();
+        retiredDutyEntity!.DutyStartDate.Should().Be(new DateTime(2024, 6, 15));
+        retiredDutyEntity.DutyEndDate.Should().BeNull();
+    }
+
+    [TestMethod]
+    public async Task CreateAstronautDuty_WithNonRetiredTitle_ShouldNotSetCareerEndDate()
+    {
+        // Arrange - Create person first
+        var person = await SeedPersonAsync(new PersonAstronautEntity { Name = "Teal'c" });
+
+        // Act - Create a non-retired duty
+        var createDuty = new CreateAstronautDutyResponse
+        {
+            Name = "Teal'c",
+            Rank = "Jaffa Warrior",
+            DutyTitle = "SG-1 Team Member",
+            DutyStartDate = new DateTime(2020, 1, 1)
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/astronautduty", createDuty);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verify career end date is NOT set
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
+
+        var detail = await db.AstronautDetails.FirstAsync(d => d.PersonId == person.Id);
+        detail.CareerEndDate.Should().BeNull("Career end date should NOT be set for non-retired duties");
+        detail.CurrentDutyTitle.Should().Be("SG-1 Team Member");
+    }
+
     #endregion
 
     #region End-to-End Scenarios

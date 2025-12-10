@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -9,6 +9,7 @@ import { MoleculesModule } from './molecules/molecules.module';
 import { OrganismsModule } from './organisms/organisms.module';
 import { TemplatesModule } from './templates/templates.module';
 import { PagesModule } from './pages/pages.module';
+import { authInterceptor } from './shared/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,9 @@ import { PagesModule } from './pages/pages.module';
     TemplatesModule,
     PagesModule
   ],
-  providers: [],
+  providers: [
+    provideHttpClient(withInterceptors([authInterceptor]))
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

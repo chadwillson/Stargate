@@ -11,7 +11,7 @@ namespace Stargate.IntegrationTests;
 
 /// <summary>
 /// Integration tests for Person API endpoints using SQLite.
-/// Tests all CRUD operations to ensure they work correctly with the SQLite database.
+/// Tests all CRUD operations to ensure they work correctly with the SQ database.
 /// </summary>
 [TestClass]
 public sealed class PersonEndpointTests

@@ -1,0 +1,58 @@
+Summary
+  Generated on: 12/10/2025 - 12:41:17 PM
+  Coverage date: 12/10/2025 - 12:05:23 PM - 12/10/2025 - 12:14:22 PM
+  Parser: MultiReport (2x Cobertura)
+  Assemblies: 3
+  Classes: 32
+  Files: 28
+  Line coverage: 40.4%
+  Covered lines: 247
+  Uncovered lines: 363
+  Coverable lines: 610
+  Total lines: 1150
+  Branch coverage: 55.1% (43 of 78)
+  Covered branches: 43
+  Total branches: 78
+  Method coverage: 37.8% (50 of 132)
+  Full method coverage: 37.1% (49 of 132)
+  Covered methods: 50
+  Fully covered methods: 49
+  Total methods: 132
+
+Stargate.Application                                             75.7%
+  Stargate.Application.Services.AstronautDutyService             97.3%
+  Stargate.Application.Services.DatabaseLoggingService              0%
+  Stargate.Application.Services.PersonAstronautService            100%
+  Stargate.Application.Validators.CreateAstronautDutyValidator      0%
+  Stargate.Application.Validators.PersonRequestValidator          100%
+
+Stargate.Domain                                                  73.5%
+  Stargate.Domain.Dtos.AstronautDetailResponse                      0%
+  Stargate.Domain.Dtos.AstronautDutiesByNameResponse              100%
+  Stargate.Domain.Dtos.AstronautDutiesListResponse                100%
+  Stargate.Domain.Dtos.AstronautDutyBaseResponse                  100%
+  Stargate.Domain.Dtos.AstronautDutyResponse                     85.7%
+  Stargate.Domain.Dtos.BaseResponse                               100%
+  Stargate.Domain.Dtos.CreateAstronautDutyResponse                100%
+  Stargate.Domain.Dtos.PersonAstronautListResponse                100%
+  Stargate.Domain.Dtos.PersonAstronautResponse                    100%
+  Stargate.Domain.Dtos.PersonBaseRequest                            0%
+  Stargate.Domain.Dtos.PersonRequest                              100%
+
+Stargate.Repository                                               5.2%
+  Stargate.Repository.DatabaseSeeder                                0%
+  Stargate.Repository.Entities.AstronautDetailConfiguration         0%
+  Stargate.Repository.Entities.AstronautDetailEntity             85.7%
+  Stargate.Repository.Entities.AstronautDutyConfiguration           0%
+  Stargate.Repository.Entities.AstronautDutyEntity               85.7%
+  Stargate.Repository.Entities.LogEntryConfiguration                0%
+  Stargate.Repository.Entities.LogEntryEntity                       0%
+  Stargate.Repository.Entities.PersonAstronautEntity              100%
+  Stargate.Repository.Entities.PersonConfiguration                  0%
+  Stargate.Repository.Repositories.AstronautDetailRepository        0%
+  Stargate.Repository.Repositories.AstronautDutyRepository          0%
+  Stargate.Repository.Repositories.LogRepository                    0%
+  Stargate.Repository.Repositories.PersonAstronautRepository        0%
+  Stargate.Repository.Repositories.Repository<T>                    0%
+  Stargate.Repository.Repositories.UnitOfWork                       0%
+  Stargate.Repository.StargateContext                               0%

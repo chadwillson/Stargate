@@ -1,4 +1,4 @@
-﻿using Stargate.Application.Interfaces;
+using Stargate.Application.Interfaces;
 using Stargate.Domain.Dtos;
 using Stargate.Repository.Entities;
 using Stargate.Repository.Interfaces;
@@ -8,18 +8,24 @@ namespace Stargate.Application.Services
     public class AstronautDutyService : IAstronautDutyService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILoggingService _loggingService;
+        private const string Category = "AstronautDutyService";
 
-        public AstronautDutyService(IUnitOfWork unitOfWork)
+        public AstronautDutyService(IUnitOfWork unitOfWork, ILoggingService loggingService)
         {
             _unitOfWork = unitOfWork;
+            _loggingService = loggingService;
         }
 
-        public async Task<AstronautDutiesListResponse> GetAstronautDutiesByName(string name, CancellationToken cancellationToken)
+        public async Task<AstronautDutiesListResponse> GetAstronautDutiesByName(string name, string? correlationId, CancellationToken cancellationToken)
         {
+            await _loggingService.LogInformationAsync(Category, $"Retrieving astronaut duties for: {name}", source: nameof(GetAstronautDutiesByName), correlationId: correlationId, cancellationToken: cancellationToken);
+
             var people = await _unitOfWork.PersonAstronauts.SearchByNameWithAllRelationsAsync(name, cancellationToken);
 
             if (!people.Any())
             {
+                await _loggingService.LogWarningAsync(Category, $"No people found matching: {name}", source: nameof(GetAstronautDutiesByName), correlationId: correlationId, cancellationToken: cancellationToken);
                 return new AstronautDutiesListResponse
                 {
                     Success = false,
@@ -57,14 +63,18 @@ namespace Stargate.Application.Services
                 duties.Add(response);
             }
 
+            await _loggingService.LogInformationAsync(Category, $"Retrieved {duties.Count} people with duties for search: {name}", source: nameof(GetAstronautDutiesByName), correlationId: correlationId, cancellationToken: cancellationToken);
+
             return new AstronautDutiesListResponse
             {
                 Duties = duties
             };
         }
 
-        public async Task<CreateAstronautDutyResponse> CreateAstronautDuty(CreateAstronautDutyResponse request, CancellationToken cancellationToken)
+        public async Task<CreateAstronautDutyResponse> CreateAstronautDuty(CreateAstronautDutyResponse request, string? correlationId, CancellationToken cancellationToken)
         {
+            await _loggingService.LogInformationAsync(Category, $"Creating astronaut duty for: {request.Name}, Title: {request.DutyTitle}, Rank: {request.Rank}", source: nameof(CreateAstronautDuty), correlationId: correlationId, cancellationToken: cancellationToken);
+
             // Get or create the person by name
             var person = await _unitOfWork.PersonAstronauts.GetByNameAsync(request.Name, cancellationToken);
 
@@ -78,6 +88,7 @@ namespace Stargate.Application.Services
 
                 await _unitOfWork.PersonAstronauts.AddAsync(person, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
+                await _loggingService.LogInformationAsync(Category, $"Created new person: {request.Name} (ID: {person.Id})", source: nameof(CreateAstronautDuty), correlationId: correlationId, cancellationToken: cancellationToken);
             }
 
             // Get or create astronaut detail
@@ -137,6 +148,8 @@ namespace Stargate.Application.Services
 
             // Save all changes
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _loggingService.LogInformationAsync(Category, $"Created astronaut duty (ID: {newAstronautDuty.Id}) for {request.Name}: {request.Rank} - {request.DutyTitle}", source: nameof(CreateAstronautDuty), correlationId: correlationId, cancellationToken: cancellationToken);
 
             return new CreateAstronautDutyResponse
             {

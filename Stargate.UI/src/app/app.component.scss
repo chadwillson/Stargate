@@ -32,6 +32,7 @@
     border-radius: 4px;
     transition: all 200ms ease;
     font-weight: 500;
+    font-size: 0.875rem;
 
     &:hover {
       background: rgba(255, 255, 255, 0.1);
@@ -44,17 +45,34 @@
   }
 }
 
-.shell__top h1 {
-  margin: 0;
-  color: var(--text-primary);
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+
+  .user-label {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+
+  .username {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
 }
 
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin: 0 0 0.25rem;
+.logo {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
 }
 
 .shell__body {

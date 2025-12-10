@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using Stargate.Api.Middleware;
 using Stargate.Application.Interfaces;
 using Stargate.Application.Services;
 using Stargate.Application.Validators;
@@ -38,6 +39,11 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Register Application Services
 builder.Services.AddScoped<IPersonAstronautService, PersonAstronautService>();
 builder.Services.AddScoped<IAstronautDutyService, AstronautDutyService>();
+builder.Services.AddScoped<ILoggingService, DatabaseLoggingService>();
+builder.Services.AddSingleton<ITokenService, TokenService>();
+
+// Register CorrelationId Accessor
+builder.Services.AddScoped<ICorrelationIdAccessor, CorrelationIdAccessor>();
 
 // Register Validators
 builder.Services.AddValidatorsFromAssemblyContaining<PersonRequestValidator>();
@@ -79,7 +85,11 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
+app.UseCorrelationId();
+
 app.UseCors("AllowAngularApp");
+
+app.UseTokenAuthentication();
 
 app.UseAuthorization();
 

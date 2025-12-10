@@ -1,11 +1,11 @@
-﻿using Stargate.Domain.Dtos;
+using Stargate.Domain.Dtos;
 
 namespace Stargate.Application.Interfaces
 {
     public interface IAstronautDutyService
     {
-        Task<AstronautDutiesListResponse> GetAstronautDutiesByName(string name, CancellationToken cancellationToken);
+        Task<AstronautDutiesListResponse> GetAstronautDutiesByName(string name, string? correlationId, CancellationToken cancellationToken);
 
-        Task<CreateAstronautDutyResponse> CreateAstronautDuty(CreateAstronautDutyResponse request, CancellationToken cancellationToken);
+        Task<CreateAstronautDutyResponse> CreateAstronautDuty(CreateAstronautDutyResponse request, string? correlationId, CancellationToken cancellationToken);
     }
 }

@@ -1,8 +1,8 @@
-<app-default-template pageTitle="Astronaut Duty Management">
+<app-default-template pageTitle="Duty Assignments">
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
   <div class="search-section">
-    <h3>Search People by Name</h3>
+    <h3>Search Personnel</h3>
     <div class="search-row">
       <input
         [(ngModel)]="searchName"
@@ -30,28 +30,63 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let personWithDuties of people">
+        <tr *ngFor="let personWithDuties of people"
+            class="person-row"
+            [class.expanded]="expandedPersonId === personWithDuties.person.id"
+            (click)="toggleExpand(personWithDuties.person.id)">
           <td>{{ personWithDuties.person.name }}</td>
           <td>{{ personWithDuties.person.currentRank || '-' }}</td>
           <td>{{ personWithDuties.person.currentDutyTitle || '-' }}</td>
           <td>{{ personWithDuties.person.careerStartDate ? (personWithDuties.person.careerStartDate | date: 'short') : '-' }}</td>
           <td>{{ personWithDuties.person.careerEndDate ? (personWithDuties.person.careerEndDate | date: 'short') : '-' }}</td>
           <td>{{ personWithDuties.astronautDuties.length }}</td>
-          <td>
-            <app-button 
-              kind="primary" 
+          <td (click)="$event.stopPropagation()">
+            <app-button
+              kind="primary"
               size="small"
               (pressed)="startEditingDuty(personWithDuties.person.id, personWithDuties.person.name)"
               *ngIf="editingPersonId !== personWithDuties.person.id">
               New Duty
             </app-button>
-            <app-button 
-              kind="secondary" 
+            <app-button
+              kind="secondary"
               size="small"
               (pressed)="cancelEditing()"
               *ngIf="editingPersonId === personWithDuties.person.id">
               Cancel
             </app-button>
+          </td>
+        </tr>
+
+        <!-- Expanded row showing existing duties -->
+        <tr *ngFor="let personWithDuties of people" class="expanded-row" [class.visible]="expandedPersonId === personWithDuties.person.id && editingPersonId !== personWithDuties.person.id">
+          <td colspan="7" *ngIf="expandedPersonId === personWithDuties.person.id && editingPersonId !== personWithDuties.person.id">
+            <div class="duties-detail">
+              <h4>Duty History for {{ personWithDuties.person.name }}</h4>
+              <div *ngIf="personWithDuties.astronautDuties.length > 0" class="existing-duties">
+                <table class="duties-subtable">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Title</th>
+                      <th>Start Date</th>
+                      <th>End Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let duty of personWithDuties.astronautDuties">
+                      <td>{{ duty.rank }}</td>
+                      <td>{{ duty.dutyTitle }}</td>
+                      <td>{{ duty.dutyStartDate | date: 'short' }}</td>
+                      <td>{{ duty.dutyEndDate ? (duty.dutyEndDate | date: 'short') : 'Active' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div *ngIf="personWithDuties.astronautDuties.length === 0" class="no-duties">
+                No duty history available.
+              </div>
+            </div>
           </td>
         </tr>
         <!-- Duty form row -->
@@ -123,7 +158,7 @@
     </table>
 
     <div *ngIf="!loading && people.length === 0" class="empty-state">
-      No people found. Use the search above to find people by name.
+      No personnel found. Use the search above to find personnel by name.
     </div>
 
     <div *ngIf="loading" class="loading-state">

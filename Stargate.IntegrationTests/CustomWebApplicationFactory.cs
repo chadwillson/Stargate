@@ -16,30 +16,15 @@ namespace Stargate.IntegrationTests;
 /// </summary>
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private SqliteConnection? _connection;
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Set environment to IntegrationTest so Program.cs uses in-memory database
+        builder.UseEnvironment("IntegrationTest");
+
         builder.ConfigureServices(services =>
         {
-            // Remove the existing DbContext configuration
-            services.RemoveAll(typeof(DbContextOptions<StargateContext>));
-
-            // Create in-memory SQLite connection that persists for the test lifetime
-            _connection = new SqliteConnection("DataSource=:memory:");
-            _connection.Open();
-
-            // Configure DbContext to use SQLite with the shared connection
-            services.AddDbContext<StargateContext>(options =>
-            {
-                options.UseSqlite(_connection);
-            });
-
-            // Ensure database is created
-            using var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
-            db.Database.EnsureCreated();
+            // The IntegrationTest environment in Program.cs already configures in-memory database
+            // We don't need to do anything else here
         });
     }
 
@@ -68,11 +53,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            _connection?.Close();
-            _connection?.Dispose();
-        }
         base.Dispose(disposing);
     }
 }

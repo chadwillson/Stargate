@@ -6,10 +6,11 @@ import { OrganismsModule } from '../organisms/organisms.module';
 import { AtomsModule } from '../atoms/atoms.module';
 import { DashboardPageComponent } from './dashboard-page/dashboard-page.component';
 import { AstronautDutyPageComponent } from './astronaut-duty-page/astronaut-duty-page.component';
+import { LoginPageComponent } from './login-page/login-page.component';
 
 @NgModule({
-  declarations: [DashboardPageComponent, AstronautDutyPageComponent],
+  declarations: [DashboardPageComponent, AstronautDutyPageComponent, LoginPageComponent],
   imports: [CommonModule, FormsModule, TemplatesModule, OrganismsModule, AtomsModule],
-  exports: [DashboardPageComponent, AstronautDutyPageComponent]
+  exports: [DashboardPageComponent, AstronautDutyPageComponent, LoginPageComponent]
 })
 export class PagesModule {}

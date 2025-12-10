@@ -1,16 +1,22 @@
 <div class="shell">
   <header class="shell__top">
     <div>
-      <p class="eyebrow">Stargate</p>
-      <h1>Stargate Management System</h1>
+      <h1 class="logo">STARGATE</h1>
     </div>
     <div class="header-actions">
-      <nav class="nav-links">
-        <a routerLink="/people" routerLinkActive="active">People</a>
-        <a routerLink="/astronaut-duties" routerLinkActive="active">Astronaut Duties</a>
+      <nav class="nav-links" *ngIf="isAuthenticated">
+        <a routerLink="/people" routerLinkActive="active">Personnel</a>
+        <a routerLink="/astronaut-duties" routerLinkActive="active">Duty Assignments</a>
       </nav>
       <app-button kind="secondary" (pressed)="toggleTheme()">
-        {{ isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode' }}
+        {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
+      </app-button>
+      <div class="user-info" *ngIf="isAuthenticated && username">
+        <span class="user-label">Logged in as:</span>
+        <span class="username">{{ username }}</span>
+      </div>
+      <app-button kind="ghost" *ngIf="isAuthenticated" (pressed)="logout()">
+        Logout
       </app-button>
     </div>
   </header>

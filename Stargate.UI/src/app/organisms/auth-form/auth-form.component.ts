@@ -9,9 +9,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 export class AuthFormComponent {
   @Input() title = 'Sign in';
   @Input() error: string | null = null;
-  @Output() submitAuth = new EventEmitter<{ email: string; password: string }>();
+  @Output() submitAuth = new EventEmitter<{ username: string; password: string }>();
 
-  model = { email: '', password: '' };
+  model = { username: '', password: '' };
 
   onSubmit(): void {
     this.submitAuth.emit({ ...this.model });

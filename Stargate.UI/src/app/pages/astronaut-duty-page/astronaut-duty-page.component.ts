@@ -14,12 +14,22 @@ export class AstronautDutyPageComponent implements OnInit {
   error: string | null = null;
   searchName = '';
   editingPersonId: number | null = null;
+  expandedPersonId: number | null = null;
   newDuty: Partial<CreateAstronautDutyRequest> = {};
 
   constructor(private dutyApi: AstronautDutyApiService) {}
 
   ngOnInit(): void {
     // Astronaut duties require a name to search, so we don't load on init
+  }
+
+  toggleExpand(personId: number): void {
+    if (this.expandedPersonId === personId) {
+      this.expandedPersonId = null;
+    } else {
+      this.expandedPersonId = personId;
+      this.editingPersonId = null; // Close editing form if open
+    }
   }
 
   searchPeople(): void {
@@ -47,6 +57,7 @@ export class AstronautDutyPageComponent implements OnInit {
 
   startEditingDuty(personId: number, personName: string): void {
     this.editingPersonId = personId;
+    this.expandedPersonId = null; // Close expanded view if open
     this.newDuty = {
       name: personName,
       rank: '',

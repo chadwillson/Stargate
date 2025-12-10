@@ -17,7 +17,7 @@ terraform {
        #storage_account_name  = "dv1eppathway"
        #container_name        = "terraform"
        #key                   = "exitpathwayplugin.tfstate"
-       #access_key = "mevT3yVxsSzi7mFPKnu0xuQ7psJHLGU3n32fdphiSw6W+exTPjhJcjdW1wX9H+fou1LvgSEN8HJ4o2DwX5AtdQ=="
+       #access_key = ""
     }
 }
 

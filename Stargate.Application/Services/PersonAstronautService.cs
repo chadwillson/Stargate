@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Stargate.Application.Interfaces;
 using Stargate.Domain.Dtos;
 using Stargate.Domain.Interfaces;
@@ -6,23 +7,22 @@ using Stargate.Repository.Interfaces;
 
 namespace Stargate.Application.Services
 {
-    public class PersonAstronautService : IPersonAstronautService
+    public partial class PersonAstronautService : IPersonAstronautService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILoggingService _loggingService;
+        private readonly ILogger<PersonAstronautService> _logger;
         private readonly IPersonDomainService _personDomainService;
-        private const string Category = "PersonAstronautService";
 
-        public PersonAstronautService(IUnitOfWork unitOfWork, ILoggingService loggingService, IPersonDomainService personDomainService)
+        public PersonAstronautService(IUnitOfWork unitOfWork, ILogger<PersonAstronautService> logger, IPersonDomainService personDomainService)
         {
             _unitOfWork = unitOfWork;
-            _loggingService = loggingService;
+            _logger = logger;
             _personDomainService = personDomainService;
         }
 
-        public async Task<PersonAstronautListResponse> GetPeople(string? correlationId, CancellationToken cancellationToken)
+        public async Task<PersonAstronautListResponse> GetPeople(CancellationToken cancellationToken)
         {
-            await _loggingService.LogInformationAsync(Category, "Retrieving all people", source: nameof(GetPeople), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogRetrievingAllPeople();
 
             var result = await _unitOfWork.PersonAstronauts.GetAllWithDetailsAsync(cancellationToken);
 
@@ -41,7 +41,7 @@ namespace Stargate.Application.Services
                 });
             }
 
-            await _loggingService.LogInformationAsync(Category, $"Retrieved {people.Count} people", source: nameof(GetPeople), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogRetrievedPeople(people.Count);
 
             return new PersonAstronautListResponse
             {
@@ -49,15 +49,15 @@ namespace Stargate.Application.Services
             };
         }
 
-        public async Task<PersonAstronautResponse> GetPersonByName(string name, string? correlationId, CancellationToken cancellationToken)
+        public async Task<PersonAstronautResponse> GetPersonByName(string name, CancellationToken cancellationToken)
         {
-            await _loggingService.LogInformationAsync(Category, $"Retrieving person by name: {name}", source: nameof(GetPersonByName), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogRetrievingPersonByName(name);
 
             var result = await _unitOfWork.PersonAstronauts.GetByNameWithDetailsAsync(name, cancellationToken);
 
             if (result == null)
             {
-                await _loggingService.LogWarningAsync(Category, $"Person not found: {name}", source: nameof(GetPersonByName), correlationId: correlationId, cancellationToken: cancellationToken);
+                LogPersonNotFound(name);
                 return new PersonAstronautResponse
                 {
                     Success = false,
@@ -76,20 +76,20 @@ namespace Stargate.Application.Services
                 PersonId = result.Id
             };
 
-            await _loggingService.LogInformationAsync(Category, $"Retrieved person: {name} (ID: {result.Id})", source: nameof(GetPersonByName), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogRetrievedPerson(name, result.Id);
 
             return map;
         }
 
-        public async Task<PersonAstronautResponse> CreatePerson(PersonRequest request, string? correlationId, CancellationToken cancellationToken)
+        public async Task<PersonAstronautResponse> CreatePerson(PersonRequest request, CancellationToken cancellationToken)
         {
-            await _loggingService.LogInformationAsync(Category, $"Creating new person: {request.Name}", source: nameof(CreatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogCreatingPerson(request.Name);
 
             // Validate using domain service
             var validationResult = await _personDomainService.ValidatePersonCreationAsync(request.Name, cancellationToken);
             if (!validationResult.IsValid)
             {
-                await _loggingService.LogWarningAsync(Category, $"Duplicate person name detected: {request.Name}", source: nameof(CreatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+                LogDuplicatePersonName(request.Name);
                 return new PersonAstronautResponse
                 {
                     Success = false,
@@ -106,7 +106,7 @@ namespace Stargate.Application.Services
             await _unitOfWork.PersonAstronauts.AddAsync(newPerson, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _loggingService.LogInformationAsync(Category, $"Created person: {newPerson.Name} (ID: {newPerson.Id})", source: nameof(CreatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogCreatedPerson(newPerson.Name, newPerson.Id);
 
             return new PersonAstronautResponse()
             {
@@ -115,15 +115,15 @@ namespace Stargate.Application.Services
             };
         }
 
-        public async Task<PersonAstronautResponse> UpdatePerson(string name, PersonRequest request, string? correlationId, CancellationToken cancellationToken)
+        public async Task<PersonAstronautResponse> UpdatePerson(string name, PersonRequest request, CancellationToken cancellationToken)
         {
-            await _loggingService.LogInformationAsync(Category, $"Updating person: {name} to {request.Name}", source: nameof(UpdatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogUpdatingPerson(name, request.Name);
 
             var person = await _unitOfWork.PersonAstronauts.GetByNameAsync(name, cancellationToken);
 
             if (person == null)
             {
-                await _loggingService.LogWarningAsync(Category, $"Person not found for update: {name}", source: nameof(UpdatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+                LogPersonNotFoundForUpdate(name);
                 return new PersonAstronautResponse
                 {
                     Success = false,
@@ -136,7 +136,7 @@ namespace Stargate.Application.Services
             var validationResult = await _personDomainService.ValidatePersonUpdateAsync(person.Id, person.Name, request.Name, cancellationToken);
             if (!validationResult.IsValid)
             {
-                await _loggingService.LogWarningAsync(Category, $"Duplicate person name detected during update: {request.Name}", source: nameof(UpdatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+                LogDuplicatePersonNameDuringUpdate(request.Name);
                 return new PersonAstronautResponse
                 {
                     Success = false,
@@ -150,7 +150,7 @@ namespace Stargate.Application.Services
             await _unitOfWork.PersonAstronauts.UpdateAsync(person, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _loggingService.LogInformationAsync(Category, $"Updated person: {oldName} -> {person.Name} (ID: {person.Id})", source: nameof(UpdatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogUpdatedPerson(oldName, person.Name, person.Id);
 
             return new PersonAstronautResponse
             {

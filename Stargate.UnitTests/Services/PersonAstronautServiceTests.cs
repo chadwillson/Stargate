@@ -1,5 +1,7 @@
 using FluentAssertions;
 
+using Microsoft.Extensions.Logging;
+
 using Moq;
 
 using Stargate.Application.Interfaces;
@@ -17,7 +19,7 @@ namespace Stargate.UnitTests.Services
     {
         private Mock<IUnitOfWork> _mockUnitOfWork;
         private Mock<IPersonAstronautRepository> _mockPersonRepo;
-        private Mock<ILoggingService> _mockLoggingService;
+        private Mock<ILogger<PersonAstronautService>> _mockLogger;
         private Mock<IPersonDomainService> _mockPersonDomainService;
         private PersonAstronautService _service;
 
@@ -26,12 +28,12 @@ namespace Stargate.UnitTests.Services
         {
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockPersonRepo = new Mock<IPersonAstronautRepository>();
-            _mockLoggingService = new Mock<ILoggingService>();
+            _mockLogger = new Mock<ILogger<PersonAstronautService>>();
             _mockPersonDomainService = new Mock<IPersonDomainService>();
 
             _mockUnitOfWork.Setup(x => x.PersonAstronauts).Returns(_mockPersonRepo.Object);
 
-            _service = new PersonAstronautService(_mockUnitOfWork.Object, _mockLoggingService.Object, _mockPersonDomainService.Object);
+            _service = new PersonAstronautService(_mockUnitOfWork.Object, _mockLogger.Object, _mockPersonDomainService.Object);
         }
 
         [TestMethod]
@@ -47,7 +49,7 @@ namespace Stargate.UnitTests.Services
                 .ReturnsAsync(people);
 
             // Act
-            var result = await _service.GetPeople(null, CancellationToken.None);
+            var result = await _service.GetPeople(CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -69,7 +71,7 @@ namespace Stargate.UnitTests.Services
                 .ReturnsAsync(person);
 
             // Act
-            var result = await _service.GetPersonByName("John Doe", null, CancellationToken.None);
+            var result = await _service.GetPersonByName("John Doe", CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -86,7 +88,7 @@ namespace Stargate.UnitTests.Services
                 .ReturnsAsync((PersonAstronautEntity?)null);
 
             // Act
-            var result = await _service.GetPersonByName("Unknown", null, CancellationToken.None);
+            var result = await _service.GetPersonByName("Unknown", CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -109,7 +111,7 @@ namespace Stargate.UnitTests.Services
                 .ReturnsAsync(new DomainValidationResult { IsValid = true });
 
             // Act
-            var result = await _service.CreatePerson(request, null, CancellationToken.None);
+            var result = await _service.CreatePerson(request, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -133,7 +135,7 @@ namespace Stargate.UnitTests.Services
                 .ReturnsAsync(new DomainValidationResult { IsValid = true });
 
             // Act
-            var result = await _service.UpdatePerson("Old Name", request, null, CancellationToken.None);
+            var result = await _service.UpdatePerson("Old Name", request, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -151,7 +153,7 @@ namespace Stargate.UnitTests.Services
                 .ReturnsAsync((PersonAstronautEntity?)null);
 
             // Act
-            var result = await _service.UpdatePerson("Unknown", request, null, CancellationToken.None);
+            var result = await _service.UpdatePerson("Unknown", request, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();

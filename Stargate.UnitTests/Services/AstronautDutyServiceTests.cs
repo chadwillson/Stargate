@@ -1,5 +1,7 @@
 using FluentAssertions;
 
+using Microsoft.Extensions.Logging;
+
 using Moq;
 
 using Stargate.Application.Interfaces;
@@ -18,7 +20,7 @@ namespace Stargate.UnitTests.Services
         private Mock<IPersonAstronautRepository> _mockPersonRepo;
         private Mock<IAstronautDetailRepository> _mockDetailRepo;
         private Mock<IAstronautDutyRepository> _mockDutyRepo;
-        private Mock<ILoggingService> _mockLoggingService;
+        private Mock<ILogger<AstronautDutyService>> _mockLogger;
         private Mock<IAstronautDutyDomainService> _mockDutyDomainService;
         private AstronautDutyService _service;
 
@@ -29,14 +31,14 @@ namespace Stargate.UnitTests.Services
             _mockPersonRepo = new Mock<IPersonAstronautRepository>();
             _mockDetailRepo = new Mock<IAstronautDetailRepository>();
             _mockDutyRepo = new Mock<IAstronautDutyRepository>();
-            _mockLoggingService = new Mock<ILoggingService>();
+            _mockLogger = new Mock<ILogger<AstronautDutyService>>();
             _mockDutyDomainService = new Mock<IAstronautDutyDomainService>();
 
             _mockUnitOfWork.Setup(x => x.PersonAstronauts).Returns(_mockPersonRepo.Object);
             _mockUnitOfWork.Setup(x => x.AstronautDetails).Returns(_mockDetailRepo.Object);
             _mockUnitOfWork.Setup(x => x.AstronautDuties).Returns(_mockDutyRepo.Object);
 
-            _service = new AstronautDutyService(_mockUnitOfWork.Object, _mockLoggingService.Object, _mockDutyDomainService.Object);
+            _service = new AstronautDutyService(_mockUnitOfWork.Object, _mockLogger.Object, _mockDutyDomainService.Object);
         }
 
         [TestMethod]
@@ -57,7 +59,7 @@ namespace Stargate.UnitTests.Services
                 .ReturnsAsync(new List<PersonAstronautEntity> { person });
 
             // Act
-            var result = await _service.GetAstronautDutiesByName("John Doe", null, CancellationToken.None);
+            var result = await _service.GetAstronautDutiesByName("John Doe", CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -75,7 +77,7 @@ namespace Stargate.UnitTests.Services
                 .ReturnsAsync(new List<PersonAstronautEntity>());
 
             // Act
-            var result = await _service.GetAstronautDutiesByName("Unknown", null, CancellationToken.None);
+            var result = await _service.GetAstronautDutiesByName("Unknown", CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -136,7 +138,7 @@ namespace Stargate.UnitTests.Services
                 .Returns(newDuty);
 
             // Act
-            var result = await _service.CreateAstronautDuty(request, null, CancellationToken.None);
+            var result = await _service.CreateAstronautDuty(request, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -194,7 +196,7 @@ namespace Stargate.UnitTests.Services
                 .Returns(newDuty);
 
             // Act
-            var result = await _service.CreateAstronautDuty(request, null, CancellationToken.None);
+            var result = await _service.CreateAstronautDuty(request, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
@@ -255,7 +257,7 @@ namespace Stargate.UnitTests.Services
                 .Returns(newDuty);
 
             // Act
-            await _service.CreateAstronautDuty(request, null, CancellationToken.None);
+            await _service.CreateAstronautDuty(request, CancellationToken.None);
 
             // Assert
             capturedDetail.Should().NotBeNull();
@@ -318,7 +320,7 @@ namespace Stargate.UnitTests.Services
                 .Returns(newDuty);
 
             // Act
-            await _service.CreateAstronautDuty(request, null, CancellationToken.None);
+            await _service.CreateAstronautDuty(request, CancellationToken.None);
 
             // Assert
             terminatedDuty.DutyEndDate.Should().Be(new DateTime(2024, 1, 14));  // One day before new duty

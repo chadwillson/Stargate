@@ -129,7 +129,7 @@ public sealed class PersonEndpointTests
     public async Task GetPersonByName_WithSpecialCharacters_HandlesUrlEncoding()
     {
         // Arrange
-        await SeedPersonAsync(new PersonAstronautEntity { Name = "Jack O'Neill" });
+        await _factory.CreatePersonAsync("Jack O'Neill");
 
         // Act - Name with apostrophe should be URL encoded
         var response = await _client.GetAsync("/api/person/Jack O'Neill");
@@ -213,7 +213,7 @@ public sealed class PersonEndpointTests
     public async Task UpdatePerson_WhenExists_UpdatesName()
     {
         // Arrange
-        var person = await SeedPersonAsync(new PersonAstronautEntity { Name = "Old Name" });
+        var person = await _factory.CreatePersonAsync("Old Name");
 
         // Act
         var request = new PersonRequest { Id = person.Id, Name = "New Name" };
@@ -249,7 +249,7 @@ public sealed class PersonEndpointTests
     public async Task UpdatePerson_WithEmptyName_ReturnsValidationError()
     {
         // Arrange
-        await SeedPersonAsync(new PersonAstronautEntity { Name = "Test Person" });
+        await _factory.CreatePersonAsync("Test Person");
 
         // Act
         var request = new PersonRequest { Id = 1, Name = "" };
@@ -263,8 +263,8 @@ public sealed class PersonEndpointTests
     public async Task UpdatePerson_WithDuplicateName_ReturnsConflict()
     {
         // Arrange
-        await SeedPersonAsync(new PersonAstronautEntity { Name = "Person One" });
-        await SeedPersonAsync(new PersonAstronautEntity { Name = "Person Two" });
+        await _factory.CreatePersonAsync("Person One");
+        await _factory.CreatePersonAsync("Person Two");
 
         // Act - attempt to rename Person Two to Person One (duplicate)
         var request = new PersonRequest { Id = 2, Name = "Person One" };
@@ -287,14 +287,12 @@ public sealed class PersonEndpointTests
     public async Task GetPerson_WithAstronautDetail_ReturnsCompleteInfo()
     {
         // Arrange
-        var person = await SeedPersonAsync(new PersonAstronautEntity { Name = "Samantha Carter" });
-        await SeedAstronautDetailAsync(new AstronautDetailEntity
-        {
-            PersonId = person.Id,
-            CurrentRank = "Colonel",
-            CurrentDutyTitle = "Chief of Research",
-            CareerStartDate = new DateTime(2020, 1, 1)
-        });
+        var person = await _factory.CreatePersonAsync("Samantha Carter");
+        await _factory.CreateAstronautDetailAsync(
+            person.Id,
+            "Colonel",
+            "Chief of Research",
+            new DateTime(2020, 1, 1));
 
         // Act
         var response = await _client.GetAsync("/api/person/Samantha Carter");
@@ -309,25 +307,4 @@ public sealed class PersonEndpointTests
 
     #endregion
 
-    #region Helper Methods
-
-    private async Task<PersonAstronautEntity> SeedPersonAsync(PersonAstronautEntity person)
-    {
-        await using var scope = _factory.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
-        db.People.Add(person);
-        await db.SaveChangesAsync();
-        return person;
-    }
-
-    private async Task<AstronautDetailEntity> SeedAstronautDetailAsync(AstronautDetailEntity detail)
-    {
-        await using var scope = _factory.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
-        db.AstronautDetails.Add(detail);
-        await db.SaveChangesAsync();
-        return detail;
-    }
-
-    #endregion
 }

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using Stargate.Application.Interfaces;
 using Stargate.Repository;
+using Stargate.Repository.Entities;
 
 namespace Stargate.IntegrationTests;
 
@@ -62,6 +62,96 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
         DatabaseSeeder.Seed(db);
+    }
+
+    /// <summary>
+    /// Gets the TestDataService for creating test scenarios.
+    /// </summary>
+    public async Task SeedBasicScenarioAsync()
+    {
+        using var scope = Services.CreateScope();
+        var testDataService = scope.ServiceProvider.GetRequiredService<ITestDataService>();
+        await testDataService.CreateBasicScenarioAsync();
+    }
+
+    /// <summary>
+    /// Creates complex test scenario with multiple astronauts and duties.
+    /// </summary>
+    public async Task SeedComplexScenarioAsync()
+    {
+        using var scope = Services.CreateScope();
+        var testDataService = scope.ServiceProvider.GetRequiredService<ITestDataService>();
+        await testDataService.CreateComplexScenarioAsync();
+    }
+
+    /// <summary>
+    /// Creates edge case scenario for testing.
+    /// </summary>
+    public async Task SeedEdgeCaseScenarioAsync()
+    {
+        using var scope = Services.CreateScope();
+        var testDataService = scope.ServiceProvider.GetRequiredService<ITestDataService>();
+        await testDataService.CreateEdgeCaseScenarioAsync();
+    }
+
+    /// <summary>
+    /// Creates retired astronaut scenario for testing.
+    /// </summary>
+    public async Task SeedRetiredAstronautScenarioAsync()
+    {
+        using var scope = Services.CreateScope();
+        var testDataService = scope.ServiceProvider.GetRequiredService<ITestDataService>();
+        await testDataService.CreateRetiredAstronautScenarioAsync();
+    }
+
+    /// <summary>
+    /// Creates scenario with astronaut having multiple duties over time.
+    /// </summary>
+    public async Task SeedMultipleDutiesScenarioAsync()
+    {
+        using var scope = Services.CreateScope();
+        var testDataService = scope.ServiceProvider.GetRequiredService<ITestDataService>();
+        await testDataService.CreateMultipleDutiesScenarioAsync();
+    }
+
+    /// <summary>
+    /// Creates a person with the specified name.
+    /// </summary>
+    public async Task<PersonAstronautEntity> CreatePersonAsync(string name)
+    {
+        using var scope = Services.CreateScope();
+        var testDataService = scope.ServiceProvider.GetRequiredService<ITestDataService>();
+        return await testDataService.CreatePersonAsync(name);
+    }
+
+    /// <summary>
+    /// Creates an astronaut detail for a person.
+    /// </summary>
+    public async Task<AstronautDetailEntity> CreateAstronautDetailAsync(
+        int personId,
+        string rank,
+        string dutyTitle,
+        DateTime careerStartDate,
+        DateTime? careerEndDate = null)
+    {
+        using var scope = Services.CreateScope();
+        var testDataService = scope.ServiceProvider.GetRequiredService<ITestDataService>();
+        return await testDataService.CreateAstronautDetailAsync(personId, rank, dutyTitle, careerStartDate, careerEndDate);
+    }
+
+    /// <summary>
+    /// Creates an astronaut duty for a person.
+    /// </summary>
+    public async Task<AstronautDutyEntity> CreateAstronautDutyAsync(
+        int personId,
+        string rank,
+        string dutyTitle,
+        DateTime dutyStartDate,
+        DateTime? dutyEndDate = null)
+    {
+        using var scope = Services.CreateScope();
+        var testDataService = scope.ServiceProvider.GetRequiredService<ITestDataService>();
+        return await testDataService.CreateAstronautDutyAsync(personId, rank, dutyTitle, dutyStartDate, dutyEndDate);
     }
 
     protected override void Dispose(bool disposing)

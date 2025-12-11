@@ -78,6 +78,7 @@ builder.Services.AddScoped<IAstronautDutyDomainService, AstronautDutyDomainServi
 // Register Application Services
 builder.Services.AddScoped<IPersonAstronautService, PersonAstronautService>();
 builder.Services.AddScoped<IAstronautDutyService, AstronautDutyService>();
+builder.Services.AddScoped<ITestDataService, TestDataService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 
 // Register CorrelationId Accessor

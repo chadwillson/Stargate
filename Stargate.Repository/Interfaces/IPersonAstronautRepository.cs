@@ -9,5 +9,7 @@ namespace Stargate.Repository.Interfaces
         Task<PersonAstronautEntity?> GetByNameWithAllRelationsAsync(string name, CancellationToken cancellationToken = default);
         Task<IEnumerable<PersonAstronautEntity>> GetAllWithDetailsAsync(CancellationToken cancellationToken = default);
         Task<IEnumerable<PersonAstronautEntity>> SearchByNameWithAllRelationsAsync(string searchTerm, CancellationToken cancellationToken = default);
+        Task<bool> ExistsAsync(string name, CancellationToken cancellationToken = default);
+        Task<bool> ExistsAsync(string name, int excludePersonId, CancellationToken cancellationToken = default);
     }
 }

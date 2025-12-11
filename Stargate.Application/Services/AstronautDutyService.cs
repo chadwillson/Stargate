@@ -1,5 +1,6 @@
 using Stargate.Application.Interfaces;
 using Stargate.Domain.Dtos;
+using Stargate.Domain.Interfaces;
 using Stargate.Repository.Entities;
 using Stargate.Repository.Interfaces;
 
@@ -9,12 +10,14 @@ namespace Stargate.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggingService _loggingService;
+        private readonly IAstronautDutyDomainService _dutyDomainService;
         private const string Category = "AstronautDutyService";
 
-        public AstronautDutyService(IUnitOfWork unitOfWork, ILoggingService loggingService)
+        public AstronautDutyService(IUnitOfWork unitOfWork, ILoggingService loggingService, IAstronautDutyDomainService dutyDomainService)
         {
             _unitOfWork = unitOfWork;
             _loggingService = loggingService;
+            _dutyDomainService = dutyDomainService;
         }
 
         public async Task<AstronautDutiesListResponse> GetAstronautDutiesByName(string name, string? correlationId, CancellationToken cancellationToken)
@@ -75,12 +78,12 @@ namespace Stargate.Application.Services
         {
             await _loggingService.LogInformationAsync(Category, $"Creating astronaut duty for: {request.Name}, Title: {request.DutyTitle}, Rank: {request.Rank}", source: nameof(CreateAstronautDuty), correlationId: correlationId, cancellationToken: cancellationToken);
 
-            // Get or create the person by name
-            var person = await _unitOfWork.PersonAstronauts.GetByNameAsync(request.Name, cancellationToken);
+            // Use domain service to check if person exists
+            var person = await _dutyDomainService.EnsurePersonExistsAsync(request.Name, cancellationToken);
 
             if (person == null)
             {
-                // Create new person
+                // Domain service indicated person needs to be created
                 person = new PersonAstronautEntity
                 {
                     Name = request.Name
@@ -91,58 +94,31 @@ namespace Stargate.Application.Services
                 await _loggingService.LogInformationAsync(Category, $"Created new person: {request.Name} (ID: {person.Id})", source: nameof(CreateAstronautDuty), correlationId: correlationId, cancellationToken: cancellationToken);
             }
 
-            // Get or create astronaut detail
+            // Get existing astronaut detail
             var astronautDetail = await _unitOfWork.AstronautDetails.GetByPersonIdAsync(person.Id, cancellationToken);
+
+            // Use domain service to prepare astronaut detail (handles RETIRED logic)
+            var preparedDetail = _dutyDomainService.PrepareAstronautDetail(astronautDetail, request.Rank, request.DutyTitle, request.DutyStartDate, person.Id);
 
             if (astronautDetail == null)
             {
-                astronautDetail = new AstronautDetailEntity
-                {
-                    PersonId = person.Id,
-                    CurrentDutyTitle = request.DutyTitle,
-                    CurrentRank = request.Rank,
-                    CareerStartDate = request.DutyStartDate.Date
-                };
-
-                if (request.DutyTitle == "RETIRED")
-                {
-                    astronautDetail.CareerEndDate = request.DutyStartDate.AddDays(-1).Date;
-                }
-
-                await _unitOfWork.AstronautDetails.AddAsync(astronautDetail, cancellationToken);
+                await _unitOfWork.AstronautDetails.AddAsync(preparedDetail, cancellationToken);
             }
             else
             {
-                astronautDetail.CurrentDutyTitle = request.DutyTitle;
-                astronautDetail.CurrentRank = request.Rank;
-
-                if (request.DutyTitle == "RETIRED")
-                {
-                    astronautDetail.CareerEndDate = request.DutyStartDate.AddDays(-1).Date;
-                }
-
-                await _unitOfWork.AstronautDetails.UpdateAsync(astronautDetail, cancellationToken);
+                await _unitOfWork.AstronautDetails.UpdateAsync(preparedDetail, cancellationToken);
             }
 
-            // Get active duties and end them
-            var activeDuties = await _unitOfWork.AstronautDuties.GetByPersonIdAsync(person.Id, cancellationToken);
-            var currentActiveDuty = activeDuties.FirstOrDefault(d => d.DutyEndDate == null);
+            // Use domain service to terminate active duty
+            var terminatedDuty = await _dutyDomainService.GetAndTerminateActiveDutyAsync(person.Id, request.DutyStartDate, cancellationToken);
 
-            if (currentActiveDuty != null)
+            if (terminatedDuty != null)
             {
-                currentActiveDuty.DutyEndDate = request.DutyStartDate.AddDays(-1).Date;
-                await _unitOfWork.AstronautDuties.UpdateAsync(currentActiveDuty, cancellationToken);
+                await _unitOfWork.AstronautDuties.UpdateAsync(terminatedDuty, cancellationToken);
             }
 
-            // Create new duty
-            var newAstronautDuty = new AstronautDutyEntity
-            {
-                PersonId = person.Id,
-                Rank = request.Rank,
-                DutyTitle = request.DutyTitle,
-                DutyStartDate = request.DutyStartDate.Date,
-                DutyEndDate = null
-            };
+            // Use domain service to create new duty
+            var newAstronautDuty = _dutyDomainService.CreateNewDuty(person.Id, request.Rank, request.DutyTitle, request.DutyStartDate);
 
             await _unitOfWork.AstronautDuties.AddAsync(newAstronautDuty, cancellationToken);
 

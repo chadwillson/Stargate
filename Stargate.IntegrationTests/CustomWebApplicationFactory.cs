@@ -16,6 +16,8 @@ namespace Stargate.IntegrationTests;
 /// </summary>
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly string _databaseName = $"IntegrationTestsDb_{Guid.NewGuid()}";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // Set environment to IntegrationTest so Program.cs uses in-memory database
@@ -23,8 +25,19 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // The IntegrationTest environment in Program.cs already configures in-memory database
-            // We don't need to do anything else here
+            // Remove the existing DbContext configuration
+            var descriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(DbContextOptions<StargateContext>));
+            if (descriptor != null)
+            {
+                services.Remove(descriptor);
+            }
+
+            // Add DbContext with unique in-memory database for this test instance
+            services.AddDbContext<StargateContext>(options =>
+            {
+                options.UseInMemoryDatabase(_databaseName);
+            });
         });
     }
 

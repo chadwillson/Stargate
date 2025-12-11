@@ -17,5 +17,11 @@ namespace Stargate.Repository.Repositories
                 .OrderByDescending(ad => ad.DutyStartDate)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<AstronautDutyEntity?> GetActiveDutyAsync(int personId, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .FirstOrDefaultAsync(ad => ad.PersonId == personId && ad.DutyEndDate == null, cancellationToken);
+        }
     }
 }

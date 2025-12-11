@@ -5,6 +5,8 @@ using Stargate.Api.Middleware;
 using Stargate.Application.Interfaces;
 using Stargate.Application.Services;
 using Stargate.Application.Validators;
+using Stargate.Domain.Interfaces;
+using Stargate.Domain.Services;
 using Stargate.Repository;
 using Stargate.Repository.Interfaces;
 using Stargate.Repository.Repositories;
@@ -35,6 +37,20 @@ builder.Services.AddDbContext<StargateContext>(options =>
 
 // Register Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Register Repositories (needed by domain services) - Get from UnitOfWork to ensure same context
+builder.Services.AddScoped<IPersonAstronautRepository>(sp =>
+    sp.GetRequiredService<IUnitOfWork>().PersonAstronauts);
+builder.Services.AddScoped<IAstronautDetailRepository>(sp =>
+    sp.GetRequiredService<IUnitOfWork>().AstronautDetails);
+builder.Services.AddScoped<IAstronautDutyRepository>(sp =>
+    sp.GetRequiredService<IUnitOfWork>().AstronautDuties);
+builder.Services.AddScoped<ILogRepository>(sp =>
+    sp.GetRequiredService<IUnitOfWork>().LogEntries);
+
+// Register Domain Services
+builder.Services.AddScoped<IPersonDomainService, PersonDomainService>();
+builder.Services.AddScoped<IAstronautDutyDomainService, AstronautDutyDomainService>();
 
 // Register Application Services
 builder.Services.AddScoped<IPersonAstronautService, PersonAstronautService>();

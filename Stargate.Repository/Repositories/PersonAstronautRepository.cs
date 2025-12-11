@@ -46,5 +46,17 @@ namespace Stargate.Repository.Repositories
                 .Where(p => EF.Functions.Like(p.Name, $"%{searchTerm}%"))
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<bool> ExistsAsync(string name, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .AnyAsync(p => p.Name == name, cancellationToken);
+        }
+
+        public async Task<bool> ExistsAsync(string name, int excludePersonId, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .AnyAsync(p => p.Name == name && p.Id != excludePersonId, cancellationToken);
+        }
     }
 }

@@ -1,5 +1,6 @@
 using Stargate.Application.Interfaces;
 using Stargate.Domain.Dtos;
+using Stargate.Domain.Interfaces;
 using Stargate.Repository.Entities;
 using Stargate.Repository.Interfaces;
 
@@ -9,12 +10,14 @@ namespace Stargate.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILoggingService _loggingService;
+        private readonly IPersonDomainService _personDomainService;
         private const string Category = "PersonAstronautService";
 
-        public PersonAstronautService(IUnitOfWork unitOfWork, ILoggingService loggingService)
+        public PersonAstronautService(IUnitOfWork unitOfWork, ILoggingService loggingService, IPersonDomainService personDomainService)
         {
             _unitOfWork = unitOfWork;
             _loggingService = loggingService;
+            _personDomainService = personDomainService;
         }
 
         public async Task<PersonAstronautListResponse> GetPeople(string? correlationId, CancellationToken cancellationToken)
@@ -82,15 +85,15 @@ namespace Stargate.Application.Services
         {
             await _loggingService.LogInformationAsync(Category, $"Creating new person: {request.Name}", source: nameof(CreatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
 
-            // Check for duplicate name
-            var existingPerson = await _unitOfWork.PersonAstronauts.GetByNameAsync(request.Name, cancellationToken);
-            if (existingPerson != null)
+            // Validate using domain service
+            var validationResult = await _personDomainService.ValidatePersonCreationAsync(request.Name, cancellationToken);
+            if (!validationResult.IsValid)
             {
                 await _loggingService.LogWarningAsync(Category, $"Duplicate person name detected: {request.Name}", source: nameof(CreatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
                 return new PersonAstronautResponse
                 {
                     Success = false,
-                    Message = $"A person with the name '{request.Name}' already exists",
+                    Message = validationResult.ErrorMessage,
                     ResponseCode = 409
                 };
             }
@@ -129,20 +132,17 @@ namespace Stargate.Application.Services
                 };
             }
 
-            // Check for duplicate name if the name is being changed
-            if (person.Name != request.Name)
+            // Validate using domain service
+            var validationResult = await _personDomainService.ValidatePersonUpdateAsync(person.Id, person.Name, request.Name, cancellationToken);
+            if (!validationResult.IsValid)
             {
-                var existingPerson = await _unitOfWork.PersonAstronauts.GetByNameAsync(request.Name, cancellationToken);
-                if (existingPerson != null)
+                await _loggingService.LogWarningAsync(Category, $"Duplicate person name detected during update: {request.Name}", source: nameof(UpdatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+                return new PersonAstronautResponse
                 {
-                    await _loggingService.LogWarningAsync(Category, $"Duplicate person name detected during update: {request.Name}", source: nameof(UpdatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
-                    return new PersonAstronautResponse
-                    {
-                        Success = false,
-                        Message = $"A person with the name '{request.Name}' already exists",
-                        ResponseCode = 409
-                    };
-                }
+                    Success = false,
+                    Message = validationResult.ErrorMessage,
+                    ResponseCode = 409
+                };
             }
 
             var oldName = person.Name;

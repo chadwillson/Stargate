@@ -1,9 +1,12 @@
 using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Moq;
+
 using Stargate.Application.Interfaces;
 using Stargate.Application.Services;
 using Stargate.Domain.Dtos;
+using Stargate.Domain.Interfaces;
+using Stargate.Domain.Models;
 using Stargate.Repository.Entities;
 using Stargate.Repository.Interfaces;
 
@@ -15,6 +18,7 @@ namespace Stargate.UnitTests.Services
         private Mock<IUnitOfWork> _mockUnitOfWork;
         private Mock<IPersonAstronautRepository> _mockPersonRepo;
         private Mock<ILoggingService> _mockLoggingService;
+        private Mock<IPersonDomainService> _mockPersonDomainService;
         private PersonAstronautService _service;
 
         [TestInitialize]
@@ -23,10 +27,11 @@ namespace Stargate.UnitTests.Services
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockPersonRepo = new Mock<IPersonAstronautRepository>();
             _mockLoggingService = new Mock<ILoggingService>();
+            _mockPersonDomainService = new Mock<IPersonDomainService>();
 
             _mockUnitOfWork.Setup(x => x.PersonAstronauts).Returns(_mockPersonRepo.Object);
 
-            _service = new PersonAstronautService(_mockUnitOfWork.Object, _mockLoggingService.Object);
+            _service = new PersonAstronautService(_mockUnitOfWork.Object, _mockLoggingService.Object, _mockPersonDomainService.Object);
         }
 
         [TestMethod]
@@ -99,6 +104,10 @@ namespace Stargate.UnitTests.Services
                 .Callback<PersonAstronautEntity, CancellationToken>((p, ct) => p.Id = 1)
                 .ReturnsAsync(newPerson);
 
+            // Mock domain service validation
+            _mockPersonDomainService.Setup(x => x.ValidatePersonCreationAsync("New Person", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new DomainValidationResult { IsValid = true });
+
             // Act
             var result = await _service.CreatePerson(request, null, CancellationToken.None);
 
@@ -118,6 +127,10 @@ namespace Stargate.UnitTests.Services
 
             _mockPersonRepo.Setup(x => x.GetByNameAsync("Old Name", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(existingPerson);
+
+            // Mock domain service validation
+            _mockPersonDomainService.Setup(x => x.ValidatePersonUpdateAsync(1, "Old Name", "New Name", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new DomainValidationResult { IsValid = true });
 
             // Act
             var result = await _service.UpdatePerson("Old Name", request, null, CancellationToken.None);

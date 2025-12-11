@@ -5,6 +5,7 @@ using Moq;
 using Stargate.Application.Interfaces;
 using Stargate.Application.Services;
 using Stargate.Domain.Dtos;
+using Stargate.Domain.Interfaces;
 using Stargate.Repository.Entities;
 using Stargate.Repository.Interfaces;
 
@@ -18,6 +19,7 @@ namespace Stargate.UnitTests.Services
         private Mock<IAstronautDetailRepository> _mockDetailRepo;
         private Mock<IAstronautDutyRepository> _mockDutyRepo;
         private Mock<ILoggingService> _mockLoggingService;
+        private Mock<IAstronautDutyDomainService> _mockDutyDomainService;
         private AstronautDutyService _service;
 
         [TestInitialize]
@@ -28,12 +30,13 @@ namespace Stargate.UnitTests.Services
             _mockDetailRepo = new Mock<IAstronautDetailRepository>();
             _mockDutyRepo = new Mock<IAstronautDutyRepository>();
             _mockLoggingService = new Mock<ILoggingService>();
+            _mockDutyDomainService = new Mock<IAstronautDutyDomainService>();
 
             _mockUnitOfWork.Setup(x => x.PersonAstronauts).Returns(_mockPersonRepo.Object);
             _mockUnitOfWork.Setup(x => x.AstronautDetails).Returns(_mockDetailRepo.Object);
             _mockUnitOfWork.Setup(x => x.AstronautDuties).Returns(_mockDutyRepo.Object);
 
-            _service = new AstronautDutyService(_mockUnitOfWork.Object, _mockLoggingService.Object);
+            _service = new AstronautDutyService(_mockUnitOfWork.Object, _mockLoggingService.Object, _mockDutyDomainService.Object);
         }
 
         [TestMethod]
@@ -92,12 +95,11 @@ namespace Stargate.UnitTests.Services
                 DutyTitle = "Commander",
                 DutyStartDate = DateTime.Now
             };
-            _mockPersonRepo.Setup(x => x.GetByNameAsync("New Person", It.IsAny<CancellationToken>()))
-                .ReturnsAsync((PersonAstronautEntity?)null);
-            
+
             PersonAstronautEntity? capturedPerson = null;
             _mockPersonRepo.Setup(x => x.AddAsync(It.IsAny<PersonAstronautEntity>(), It.IsAny<CancellationToken>()))
-                .Callback<PersonAstronautEntity, CancellationToken>((p, ct) => {
+                .Callback<PersonAstronautEntity, CancellationToken>((p, ct) =>
+                {
                     capturedPerson = p;
                     p.Id = 99; // Simulate database assigning ID
                 });
@@ -106,6 +108,32 @@ namespace Stargate.UnitTests.Services
                 .ReturnsAsync((AstronautDetailEntity?)null);
             _mockDutyRepo.Setup(x => x.GetByPersonIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<AstronautDutyEntity>());
+
+            var preparedDetail = new AstronautDetailEntity
+            {
+                PersonId = 99,
+                CurrentRank = "Captain",
+                CurrentDutyTitle = "Commander",
+                CareerStartDate = DateTime.Now
+            };
+
+            var newDuty = new AstronautDutyEntity
+            {
+                PersonId = 99,
+                Rank = "Captain",
+                DutyTitle = "Commander",
+                DutyStartDate = DateTime.Now
+            };
+
+            // Mock domain service methods
+            _mockDutyDomainService.Setup(x => x.EnsurePersonExistsAsync("New Person", It.IsAny<CancellationToken>()))
+                .ReturnsAsync((PersonAstronautEntity?)null); // Returns null to indicate person needs to be created
+            _mockDutyDomainService.Setup(x => x.PrepareAstronautDetail(null, "Captain", "Commander", It.IsAny<DateTime>(), 99))
+                .Returns(preparedDetail);
+            _mockDutyDomainService.Setup(x => x.GetAndTerminateActiveDutyAsync(99, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((AstronautDutyEntity?)null);
+            _mockDutyDomainService.Setup(x => x.CreateNewDuty(99, "Captain", "Commander", It.IsAny<DateTime>()))
+                .Returns(newDuty);
 
             // Act
             var result = await _service.CreateAstronautDuty(request, null, CancellationToken.None);
@@ -132,12 +160,38 @@ namespace Stargate.UnitTests.Services
                 DutyStartDate = DateTime.Now
             };
 
+            var preparedDetail = new AstronautDetailEntity
+            {
+                PersonId = 1,
+                CurrentRank = "Captain",
+                CurrentDutyTitle = "Commander",
+                CareerStartDate = DateTime.Now
+            };
+
+            var newDuty = new AstronautDutyEntity
+            {
+                PersonId = 1,
+                Rank = "Captain",
+                DutyTitle = "Commander",
+                DutyStartDate = DateTime.Now
+            };
+
             _mockPersonRepo.Setup(x => x.GetByNameAsync("John Doe", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(person);
             _mockDetailRepo.Setup(x => x.GetByPersonIdAsync(1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((AstronautDetailEntity?)null);
             _mockDutyRepo.Setup(x => x.GetByPersonIdAsync(1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<AstronautDutyEntity>());
+
+            // Mock domain service methods
+            _mockDutyDomainService.Setup(x => x.EnsurePersonExistsAsync("John Doe", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(person);
+            _mockDutyDomainService.Setup(x => x.PrepareAstronautDetail(null, "Captain", "Commander", It.IsAny<DateTime>(), 1))
+                .Returns(preparedDetail);
+            _mockDutyDomainService.Setup(x => x.GetAndTerminateActiveDutyAsync(1, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((AstronautDutyEntity?)null);
+            _mockDutyDomainService.Setup(x => x.CreateNewDuty(1, "Captain", "Commander", It.IsAny<DateTime>()))
+                .Returns(newDuty);
 
             // Act
             var result = await _service.CreateAstronautDuty(request, null, CancellationToken.None);
@@ -162,6 +216,23 @@ namespace Stargate.UnitTests.Services
                 DutyStartDate = new DateTime(2024, 1, 15)
             };
 
+            var preparedDetail = new AstronautDetailEntity
+            {
+                PersonId = 1,
+                CurrentRank = "Captain",
+                CurrentDutyTitle = "RETIRED",
+                CareerStartDate = new DateTime(2024, 1, 15),
+                CareerEndDate = new DateTime(2024, 1, 14) // One day before
+            };
+
+            var newDuty = new AstronautDutyEntity
+            {
+                PersonId = 1,
+                Rank = "Captain",
+                DutyTitle = "RETIRED",
+                DutyStartDate = new DateTime(2024, 1, 15)
+            };
+
             _mockPersonRepo.Setup(x => x.GetByNameAsync("John Doe", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(person);
             _mockDetailRepo.Setup(x => x.GetByPersonIdAsync(1, It.IsAny<CancellationToken>()))
@@ -172,6 +243,16 @@ namespace Stargate.UnitTests.Services
             AstronautDetailEntity? capturedDetail = null;
             _mockDetailRepo.Setup(x => x.AddAsync(It.IsAny<AstronautDetailEntity>(), It.IsAny<CancellationToken>()))
                 .Callback<AstronautDetailEntity, CancellationToken>((d, ct) => capturedDetail = d);
+
+            // Mock domain service methods
+            _mockDutyDomainService.Setup(x => x.EnsurePersonExistsAsync("John Doe", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(person);
+            _mockDutyDomainService.Setup(x => x.PrepareAstronautDetail(null, "Captain", "RETIRED", new DateTime(2024, 1, 15), 1))
+                .Returns(preparedDetail);
+            _mockDutyDomainService.Setup(x => x.GetAndTerminateActiveDutyAsync(1, new DateTime(2024, 1, 15), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((AstronautDutyEntity?)null);
+            _mockDutyDomainService.Setup(x => x.CreateNewDuty(1, "Captain", "RETIRED", new DateTime(2024, 1, 15)))
+                .Returns(newDuty);
 
             // Act
             await _service.CreateAstronautDuty(request, null, CancellationToken.None);
@@ -196,6 +277,29 @@ namespace Stargate.UnitTests.Services
                 DutyStartDate = new DateTime(2024, 1, 15)
             };
 
+            var updatedDetail = new AstronautDetailEntity
+            {
+                Id = 1,
+                PersonId = 1,
+                CurrentRank = "Captain",
+                CurrentDutyTitle = "Commander"
+            };
+
+            var terminatedDuty = new AstronautDutyEntity
+            {
+                Id = 1,
+                PersonId = 1,
+                DutyEndDate = new DateTime(2024, 1, 14) // One day before new duty
+            };
+
+            var newDuty = new AstronautDutyEntity
+            {
+                PersonId = 1,
+                Rank = "Captain",
+                DutyTitle = "Commander",
+                DutyStartDate = new DateTime(2024, 1, 15)
+            };
+
             _mockPersonRepo.Setup(x => x.GetByNameAsync("John Doe", It.IsAny<CancellationToken>()))
                 .ReturnsAsync(person);
             _mockDetailRepo.Setup(x => x.GetByPersonIdAsync(1, It.IsAny<CancellationToken>()))
@@ -203,12 +307,22 @@ namespace Stargate.UnitTests.Services
             _mockDutyRepo.Setup(x => x.GetByPersonIdAsync(1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<AstronautDutyEntity> { activeDuty });
 
+            // Mock domain service methods
+            _mockDutyDomainService.Setup(x => x.EnsurePersonExistsAsync("John Doe", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(person);
+            _mockDutyDomainService.Setup(x => x.PrepareAstronautDetail(existingDetail, "Captain", "Commander", new DateTime(2024, 1, 15), 1))
+                .Returns(updatedDetail);
+            _mockDutyDomainService.Setup(x => x.GetAndTerminateActiveDutyAsync(1, new DateTime(2024, 1, 15), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(terminatedDuty);
+            _mockDutyDomainService.Setup(x => x.CreateNewDuty(1, "Captain", "Commander", new DateTime(2024, 1, 15)))
+                .Returns(newDuty);
+
             // Act
             await _service.CreateAstronautDuty(request, null, CancellationToken.None);
 
             // Assert
-            activeDuty.DutyEndDate.Should().Be(new DateTime(2024, 1, 14));  // One day before new duty
-            _mockDutyRepo.Verify(x => x.UpdateAsync(activeDuty, It.IsAny<CancellationToken>()), Times.Once);
+            terminatedDuty.DutyEndDate.Should().Be(new DateTime(2024, 1, 14));  // One day before new duty
+            _mockDutyRepo.Verify(x => x.UpdateAsync(It.IsAny<AstronautDutyEntity>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

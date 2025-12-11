@@ -403,3 +403,4 @@ FodyWeavers.xsd
 *.db-shm
 *.db-wal
 /nul
+/Stargate/nul

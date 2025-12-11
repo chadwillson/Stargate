@@ -30,9 +30,9 @@ namespace Stargate.Application.Services
                 people.Add(new PersonAstronautResponse
                 {
                     CareerEndDate = item.AstronautDetail?.CareerEndDate,
-                    CareerStartDate = item.AstronautDetail?.CareerStartDate ?? DateTime.MinValue,
-                    CurrentDutyTitle = item.AstronautDetail?.CurrentDutyTitle ?? string.Empty,
-                    CurrentRank = item.AstronautDetail?.CurrentRank ?? string.Empty,
+                    CareerStartDate = item.AstronautDetail?.CareerStartDate,
+                    CurrentDutyTitle = item.AstronautDetail?.CurrentDutyTitle,
+                    CurrentRank = item.AstronautDetail?.CurrentRank,
                     Name = item.Name,
                     PersonId = item.Id
                 });
@@ -66,9 +66,9 @@ namespace Stargate.Application.Services
             var map = new PersonAstronautResponse
             {
                 CareerEndDate = result.AstronautDetail?.CareerEndDate,
-                CareerStartDate = result.AstronautDetail?.CareerStartDate ?? DateTime.MinValue,
-                CurrentDutyTitle = result.AstronautDetail?.CurrentDutyTitle ?? string.Empty,
-                CurrentRank = result.AstronautDetail?.CurrentRank ?? string.Empty,
+                CareerStartDate = result.AstronautDetail?.CareerStartDate,
+                CurrentDutyTitle = result.AstronautDetail?.CurrentDutyTitle,
+                CurrentRank = result.AstronautDetail?.CurrentRank,
                 Name = result.Name,
                 PersonId = result.Id
             };
@@ -81,6 +81,19 @@ namespace Stargate.Application.Services
         public async Task<PersonAstronautResponse> CreatePerson(PersonRequest request, string? correlationId, CancellationToken cancellationToken)
         {
             await _loggingService.LogInformationAsync(Category, $"Creating new person: {request.Name}", source: nameof(CreatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+
+            // Check for duplicate name
+            var existingPerson = await _unitOfWork.PersonAstronauts.GetByNameAsync(request.Name, cancellationToken);
+            if (existingPerson != null)
+            {
+                await _loggingService.LogWarningAsync(Category, $"Duplicate person name detected: {request.Name}", source: nameof(CreatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+                return new PersonAstronautResponse
+                {
+                    Success = false,
+                    Message = $"A person with the name '{request.Name}' already exists",
+                    ResponseCode = 409
+                };
+            }
 
             var newPerson = new PersonAstronautEntity()
             {
@@ -114,6 +127,22 @@ namespace Stargate.Application.Services
                     Message = "Person not found",
                     ResponseCode = 404
                 };
+            }
+
+            // Check for duplicate name if the name is being changed
+            if (person.Name != request.Name)
+            {
+                var existingPerson = await _unitOfWork.PersonAstronauts.GetByNameAsync(request.Name, cancellationToken);
+                if (existingPerson != null)
+                {
+                    await _loggingService.LogWarningAsync(Category, $"Duplicate person name detected during update: {request.Name}", source: nameof(UpdatePerson), correlationId: correlationId, cancellationToken: cancellationToken);
+                    return new PersonAstronautResponse
+                    {
+                        Success = false,
+                        Message = $"A person with the name '{request.Name}' already exists",
+                        ResponseCode = 409
+                    };
+                }
             }
 
             var oldName = person.Name;

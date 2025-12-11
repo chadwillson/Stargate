@@ -185,7 +185,7 @@ To reset your local database:
 
 1. **Delete the database file:**
    ```bash
-   rm E:\Stargate\Stargate\Stargate.Api\stargate.db
+   rm E:\Stargate\Stargate.Api\stargate.db
    ```
 
 2. **Run the application:**
@@ -210,7 +210,7 @@ To reset your local database:
 
 The SQLite database file (`stargate.db`) will be created in:
 ```
-E:\Stargate\Stargate\Stargate.Api\stargate.db
+E:\Stargate\Stargate.Api\stargate.db
 ```
 
 ### .gitignore

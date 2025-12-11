@@ -55,6 +55,7 @@ export class DashboardPageComponent implements OnInit {
         this.newPerson = { name: '', id: 0 };
         this.isCreating = false;
         this.loading = false;
+        this.error = null;
       },
       error: (err) => {
         this.error = 'Failed to create person';
@@ -71,6 +72,7 @@ export class DashboardPageComponent implements OnInit {
         this.rows = this.rows.map(r => r.name === name ? updated : r);
         this.editingName = null;
         this.loading = false;
+        this.error = null;
       },
       error: (err) => {
         this.error = 'Failed to update person';

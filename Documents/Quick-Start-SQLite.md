@@ -27,7 +27,7 @@ dotnet run
 
 Or use the launch script:
 ```bash
-E:\Stargate\Stargate\start-stargate.bat
+E:\Stargate\start-stargate.bat
 ```
 
 ### 2. Database Creation
@@ -64,14 +64,14 @@ To start fresh:
 
 **Windows:**
 ```bash
-cd E:\Stargate\Stargate\Stargate.Api
+cd E:\Stargate\Stargate.Api
 del stargate.db
 dotnet run
 ```
 
 **PowerShell:**
 ```powershell
-Remove-Item "E:\Stargate\Stargate\Stargate.Api\stargate.db"
+Remove-Item "E:\Stargate\Stargate.Api\stargate.db"
 dotnet run
 ```
 
@@ -81,7 +81,7 @@ The database will be recreated and reseeded automatically.
 
 **Option 1: DB Browser for SQLite**
 1. Download from https://sqlitebrowser.org/
-2. Open `E:\Stargate\Stargate\Stargate.Api\stargate.db`
+2. Open `E:\Stargate\Stargate.Api\stargate.db`
 
 **Option 2: VS Code Extension**
 1. Install "SQLite Viewer" extension
@@ -89,7 +89,7 @@ The database will be recreated and reseeded automatically.
 
 **Option 3: Command Line**
 ```bash
-cd E:\Stargate\Stargate\Stargate.Api
+cd E:\Stargate\Stargate.Api
 sqlite3 stargate.db
 .tables
 .schema Person
@@ -114,13 +114,13 @@ To use SQL Server instead of SQLite:
 
 ## File Locations
 
-- **Database File**: `E:\Stargate\Stargate\Stargate.Api\stargate.db`
-- **Configuration**: `E:\Stargate\Stargate\Stargate.Api\appsettings.Development.json`
-- **Seeder (Local)**: `E:\Stargate\Stargate\Stargate.Repository\DatabaseSeeder.cs`
-- **Schema (Production)**: `E:\Stargate\Stargate\Stargate.Database\Tables\*.sql`
-- **Seed (Production)**: `E:\Stargate\Stargate\Stargate.Database\Post-Deployment\Script.PostDeployment.sql`
-- **Full Guide**: `E:\Stargate\Stargate\documents\SQLite-Local-Development-Setup.md`
-- **Architecture**: `E:\Stargate\Stargate\documents\Database-Architecture.md`
+- **Database File**: `E:\Stargate\Stargate.Api\stargate.db`
+- **Configuration**: `E:\Stargate\Stargate.Api\appsettings.Development.json`
+- **Seeder (Local)**: `E:\Stargate\Stargate.Repository\DatabaseSeeder.cs`
+- **Schema (Production)**: `E:\Stargate\Stargate.Database\Tables\*.sql`
+- **Seed (Production)**: `E:\Stargate\Stargate.Database\Post-Deployment\Script.PostDeployment.sql`
+- **Full Guide**: `E:\Stargate\documents\SQLite-Local-Development-Setup.md`
+- **Architecture**: `E:\Stargate\documents\Database-Architecture.md`
 
 ## Testing CRUD Operations
 

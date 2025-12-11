@@ -182,21 +182,27 @@ public sealed class PersonEndpointTests
     }
 
     [TestMethod]
-    public async Task CreatePerson_WithDuplicateName_CreatesAnotherPerson()
+    public async Task CreatePerson_WithDuplicateName_ReturnsConflict()
     {
         // Arrange - create first person
         await _client.PostAsJsonAsync("/api/person", new PersonRequest { Id = 0, Name = "Test Person" });
 
-        // Act - create second person with same name
+        // Act - attempt to create second person with same name
         var response = await _client.PostAsJsonAsync("/api/person", new PersonRequest { Id = 0, Name = "Test Person" });
 
-        // Assert - Should allow duplicate names (business requirement)
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Assert - Should reject duplicate names (business requirement: Person is uniquely identified by Name)
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var payload = await response.Content.ReadFromJsonAsync<PersonAstronautResponse>();
+        payload.Should().NotBeNull();
+        payload!.Success.Should().BeFalse();
+        payload.ResponseCode.Should().Be(409);
+        payload.Message.Should().Contain("already exists");
 
+        // Verify only one person exists
         await using var scope = _factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
         var people = await db.People.Where(p => p.Name == "Test Person").ToListAsync();
-        people.Should().HaveCountGreaterThan(1, "duplicate names should be allowed");
+        people.Should().HaveCount(1, "duplicate names should not be allowed");
     }
 
     #endregion
@@ -251,6 +257,26 @@ public sealed class PersonEndpointTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [TestMethod]
+    public async Task UpdatePerson_WithDuplicateName_ReturnsConflict()
+    {
+        // Arrange
+        await SeedPersonAsync(new PersonAstronautEntity { Name = "Person One" });
+        await SeedPersonAsync(new PersonAstronautEntity { Name = "Person Two" });
+
+        // Act - attempt to rename Person Two to Person One (duplicate)
+        var request = new PersonRequest { Id = 2, Name = "Person One" };
+        var response = await _client.PutAsJsonAsync("/api/person/Person Two", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var payload = await response.Content.ReadFromJsonAsync<PersonAstronautResponse>();
+        payload.Should().NotBeNull();
+        payload!.Success.Should().BeFalse();
+        payload.ResponseCode.Should().Be(409);
+        payload.Message.Should().Contain("already exists");
     }
 
     #endregion

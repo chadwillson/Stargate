@@ -32,13 +32,13 @@ Write-Host "All existing processes stopped." -ForegroundColor Green
 Write-Host ""
 
 # Start API in new window
-Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd 'E:\Stargate\Stargate\Stargate.Api'; Write-Host 'Starting Stargate API...' -ForegroundColor Cyan; dotnet run"
+Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd 'E:\Stargate\Stargate.Api'; Write-Host 'Starting Stargate API...' -ForegroundColor Cyan; dotnet run"
 
 # Wait a few seconds for API to start
 Start-Sleep -Seconds 3
 
 # Start UI in new window
-Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd 'E:\Stargate\Stargate\Stargate.UI'; Write-Host 'Starting Stargate UI...' -ForegroundColor Cyan; npm start"
+Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd 'E:\Stargate\Stargate.UI'; Write-Host 'Starting Stargate UI...' -ForegroundColor Cyan; npm start"
 
 Write-Host "`nBoth services are starting..." -ForegroundColor Green
 Write-Host "API will be available at: http://localhost:5031" -ForegroundColor Yellow

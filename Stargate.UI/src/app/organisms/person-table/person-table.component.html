@@ -4,6 +4,7 @@
       <tr>
         <th>ID</th>
         <th>Name</th>
+        <th>Status</th>
         <th>Current Rank</th>
         <th>Current Duty Title</th>
         <th>Career Start Date</th>
@@ -16,6 +17,11 @@
         <ng-container *ngIf="editingName !== person.name; else editMode">
           <td>{{ person.personId }}</td>
           <td>{{ person.name }}</td>
+          <td>
+            <span class="status-badge" [class.astronaut]="hasAstronautRecords(person)" [class.civilian]="!hasAstronautRecords(person)">
+              {{ hasAstronautRecords(person) ? 'Astronaut' : 'Personnel' }}
+            </span>
+          </td>
           <td>{{ person.currentRank || '-' }}</td>
           <td>{{ person.currentDutyTitle || '-' }}</td>
           <td>{{ person.careerStartDate ? (person.careerStartDate | date: 'short') : '-' }}</td>
@@ -32,7 +38,7 @@
               class="form-control"
               placeholder="Name" />
           </td>
-          <td colspan="4">-</td>
+          <td colspan="5">-</td>
           <td>
             <app-button kind="primary" size="small" (pressed)="onSave(person.name)">Save</app-button>
             <app-button kind="secondary" size="small" (pressed)="onCancel()">Cancel</app-button>
@@ -42,12 +48,12 @@
     </tbody>
     <tbody *ngIf="!loading && people.length === 0">
       <tr>
-        <td colspan="7" class="empty-state">No people found</td>
+        <td colspan="8" class="empty-state">No people found</td>
       </tr>
     </tbody>
     <tbody *ngIf="loading">
       <tr>
-        <td colspan="7" class="loading-state">Loading...</td>
+        <td colspan="8" class="loading-state">Loading...</td>
       </tr>
     </tbody>
   </table>

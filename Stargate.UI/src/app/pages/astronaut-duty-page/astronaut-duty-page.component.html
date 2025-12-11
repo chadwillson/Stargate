@@ -1,4 +1,4 @@
-<app-default-template pageTitle="Duty Assignments">
+<app-default-template pageTitle="Astronaut Duty">
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
   <div class="search-section">
@@ -78,7 +78,7 @@
                       <td>{{ duty.rank }}</td>
                       <td>{{ duty.dutyTitle }}</td>
                       <td>{{ duty.dutyStartDate | date: 'short' }}</td>
-                      <td>{{ duty.dutyEndDate ? (duty.dutyEndDate | date: 'short') : 'Active' }}</td>
+                      <td>{{ duty.dutyEndDate ? (duty.dutyEndDate | date: 'short') : (duty.dutyTitle === 'RETIRED' ? '-' : 'Active') }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -146,7 +146,7 @@
                       <td>{{ duty.rank }}</td>
                       <td>{{ duty.dutyTitle }}</td>
                       <td>{{ duty.dutyStartDate | date: 'short' }}</td>
-                      <td>{{ duty.dutyEndDate ? (duty.dutyEndDate | date: 'short') : 'Active' }}</td>
+                      <td>{{ duty.dutyEndDate ? (duty.dutyEndDate | date: 'short') : (duty.dutyTitle === 'RETIRED' ? '-' : 'Active') }}</td>
                     </tr>
                   </tbody>
                 </table>

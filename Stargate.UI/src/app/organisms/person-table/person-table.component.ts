@@ -37,4 +37,9 @@ export class PersonTableComponent {
     this.editForm = {};
     this.cancelEdit.emit();
   }
+
+  hasAstronautRecords(person: PersonResponse): boolean {
+    // A person has astronaut records if they have any of these fields set
+    return !!(person.currentRank || person.currentDutyTitle || person.careerStartDate);
+  }
 }

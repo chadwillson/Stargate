@@ -79,7 +79,7 @@ public sealed class AstronautDutyEndpointTests
     public async Task GetAstronautDutiesByName_WhenPersonExistsButNoDuties_ReturnsEmptyList()
     {
         // Arrange
-        await SeedPersonAsync(new PersonAstronautEntity { Name = "No Duties Person" });
+        await _factory.CreatePersonAsync("No Duties Person");
 
         // Act
         var response = await _client.GetAsync("/api/astronautduty/No Duties Person");
@@ -97,24 +97,20 @@ public sealed class AstronautDutyEndpointTests
     public async Task GetAstronautDutiesByName_WithMultipleDuties_ReturnsAllDuties()
     {
         // Arrange
-        var person = await SeedPersonAsync(new PersonAstronautEntity { Name = "Multi Duty Person" });
+        var person = await _factory.CreatePersonAsync("Multi Duty Person");
 
-        await SeedAstronautDutyAsync(new AstronautDutyEntity
-        {
-            PersonId = person.Id,
-            Rank = "Lieutenant",
-            DutyTitle = "First Assignment",
-            DutyStartDate = new DateTime(2020, 1, 1),
-            DutyEndDate = new DateTime(2022, 12, 31)
-        });
+        await _factory.CreateAstronautDutyAsync(
+            person.Id,
+            "Lieutenant",
+            "First Assignment",
+            new DateTime(2020, 1, 1),
+            new DateTime(2022, 12, 31));
 
-        await SeedAstronautDutyAsync(new AstronautDutyEntity
-        {
-            PersonId = person.Id,
-            Rank = "Captain",
-            DutyTitle = "Second Assignment",
-            DutyStartDate = new DateTime(2023, 1, 1)
-        });
+        await _factory.CreateAstronautDutyAsync(
+            person.Id,
+            "Captain",
+            "Second Assignment",
+            new DateTime(2023, 1, 1));
 
         // Act
         var response = await _client.GetAsync("/api/astronautduty/Multi Duty Person");
@@ -136,7 +132,7 @@ public sealed class AstronautDutyEndpointTests
     public async Task CreateAstronautDuty_ForNewPerson_CreatesPersonDutyAndDetail()
     {
         // Arrange - Create person first
-        await SeedPersonAsync(new PersonAstronautEntity { Name = "Teal'c" });
+        await _factory.CreatePersonAsync("Teal'c");
 
         var request = new CreateAstronautDutyResponse
         {
@@ -183,14 +179,12 @@ public sealed class AstronautDutyEndpointTests
     public async Task CreateAstronautDuty_ForExistingPerson_CreatesNewDutyAndUpdatesDetail()
     {
         // Arrange
-        var person = await SeedPersonAsync(new PersonAstronautEntity { Name = "Jack O'Neill" });
-        await SeedAstronautDetailAsync(new AstronautDetailEntity
-        {
-            PersonId = person.Id,
-            CurrentRank = "Colonel",
-            CurrentDutyTitle = "SG-1 Commander",
-            CareerStartDate = new DateTime(2020, 1, 1)
-        });
+        var person = await _factory.CreatePersonAsync("Jack O'Neill");
+        await _factory.CreateAstronautDetailAsync(
+            person.Id,
+            "Colonel",
+            "SG-1 Commander",
+            new DateTime(2020, 1, 1));
 
         var request = new CreateAstronautDutyResponse
         {
@@ -284,7 +278,7 @@ public sealed class AstronautDutyEndpointTests
     public async Task CreateAstronautDuty_WithFutureDate_CreatesSuccessfully()
     {
         // Arrange - Create person first
-        await SeedPersonAsync(new PersonAstronautEntity { Name = "Future Person" });
+        await _factory.CreatePersonAsync("Future Person");
 
         var futureDate = DateTime.Now.AddYears(1);
         var request = new CreateAstronautDutyResponse
@@ -308,23 +302,19 @@ public sealed class AstronautDutyEndpointTests
     public async Task CreateAstronautDuty_WithRetiredTitle_ShouldSetCareerEndDateOneDayBeforeRetirementDate()
     {
         // Arrange - Create person with initial duty
-        var person = await SeedPersonAsync(new PersonAstronautEntity { Name = "Colonel Jack O'Neill" });
-        await SeedAstronautDetailAsync(new AstronautDetailEntity
-        {
-            PersonId = person.Id,
-            CurrentRank = "Colonel",
-            CurrentDutyTitle = "SG-1 Team Leader",
-            CareerStartDate = new DateTime(2020, 1, 1)
-        });
+        var person = await _factory.CreatePersonAsync("Colonel Jack O'Neill");
+        await _factory.CreateAstronautDetailAsync(
+            person.Id,
+            "Colonel",
+            "SG-1 Team Leader",
+            new DateTime(2020, 1, 1));
 
         // Create initial active duty
-        await SeedAstronautDutyAsync(new AstronautDutyEntity
-        {
-            PersonId = person.Id,
-            Rank = "Colonel",
-            DutyTitle = "SG-1 Team Leader",
-            DutyStartDate = new DateTime(2020, 1, 1)
-        });
+        await _factory.CreateAstronautDutyAsync(
+            person.Id,
+            "Colonel",
+            "SG-1 Team Leader",
+            new DateTime(2020, 1, 1));
 
         // Act - Create RETIRED duty
         var retiredDuty = new CreateAstronautDutyResponse
@@ -372,7 +362,7 @@ public sealed class AstronautDutyEndpointTests
     public async Task CreateAstronautDuty_WithNonRetiredTitle_ShouldNotSetCareerEndDate()
     {
         // Arrange - Create person first
-        var person = await SeedPersonAsync(new PersonAstronautEntity { Name = "Teal'c" });
+        var person = await _factory.CreatePersonAsync("Teal'c");
 
         // Act - Create a non-retired duty
         var createDuty = new CreateAstronautDutyResponse
@@ -407,7 +397,7 @@ public sealed class AstronautDutyEndpointTests
         // Scenario: Create a person, then assign multiple duties
 
         // Step 1: Create person first
-        await SeedPersonAsync(new PersonAstronautEntity { Name = "Cameron Mitchell" });
+        await _factory.CreatePersonAsync("Cameron Mitchell");
 
         // Step 2: Create first duty
         var firstDuty = new CreateAstronautDutyResponse
@@ -442,37 +432,6 @@ public sealed class AstronautDutyEndpointTests
         var personPayload = await personResponse.Content.ReadFromJsonAsync<PersonAstronautResponse>();
         personPayload!.CurrentRank.Should().Be("Colonel");
         personPayload.CurrentDutyTitle.Should().Be("Base Commander");
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private async Task<PersonAstronautEntity> SeedPersonAsync(PersonAstronautEntity person)
-    {
-        await using var scope = _factory.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
-        db.People.Add(person);
-        await db.SaveChangesAsync();
-        return person;
-    }
-
-    private async Task<AstronautDetailEntity> SeedAstronautDetailAsync(AstronautDetailEntity detail)
-    {
-        await using var scope = _factory.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
-        db.AstronautDetails.Add(detail);
-        await db.SaveChangesAsync();
-        return detail;
-    }
-
-    private async Task<AstronautDutyEntity> SeedAstronautDutyAsync(AstronautDutyEntity duty)
-    {
-        await using var scope = _factory.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<StargateContext>();
-        db.AstronautDuties.Add(duty);
-        await db.SaveChangesAsync();
-        return duty;
     }
 
     #endregion

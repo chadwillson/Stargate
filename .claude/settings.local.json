@@ -5,7 +5,13 @@
       "Bash(findstr:*)",
       "Bash(dotnet build:*)",
       "Bash(dotnet test:*)",
-      "Bash(dotnet clean:*)"
+      "Bash(dotnet clean:*)",
+      "Bash(git checkout:*)",
+      "WebSearch",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet run:*)",
+      "Bash(curl:*)",
+      "Bash(timeout:*)"
     ]
   }
 }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Stargate.Application.Interfaces;
 using Stargate.Domain.Dtos;
 using Stargate.Domain.Interfaces;
@@ -6,29 +7,28 @@ using Stargate.Repository.Interfaces;
 
 namespace Stargate.Application.Services
 {
-    public class AstronautDutyService : IAstronautDutyService
+    public partial class AstronautDutyService : IAstronautDutyService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILoggingService _loggingService;
+        private readonly ILogger<AstronautDutyService> _logger;
         private readonly IAstronautDutyDomainService _dutyDomainService;
-        private const string Category = "AstronautDutyService";
 
-        public AstronautDutyService(IUnitOfWork unitOfWork, ILoggingService loggingService, IAstronautDutyDomainService dutyDomainService)
+        public AstronautDutyService(IUnitOfWork unitOfWork, ILogger<AstronautDutyService> logger, IAstronautDutyDomainService dutyDomainService)
         {
             _unitOfWork = unitOfWork;
-            _loggingService = loggingService;
+            _logger = logger;
             _dutyDomainService = dutyDomainService;
         }
 
-        public async Task<AstronautDutiesListResponse> GetAstronautDutiesByName(string name, string? correlationId, CancellationToken cancellationToken)
+        public async Task<AstronautDutiesListResponse> GetAstronautDutiesByName(string name, CancellationToken cancellationToken)
         {
-            await _loggingService.LogInformationAsync(Category, $"Retrieving astronaut duties for: {name}", source: nameof(GetAstronautDutiesByName), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogRetrievingAstronautDutiesByName(name);
 
             var people = await _unitOfWork.PersonAstronauts.SearchByNameWithAllRelationsAsync(name, cancellationToken);
 
             if (!people.Any())
             {
-                await _loggingService.LogWarningAsync(Category, $"No people found matching: {name}", source: nameof(GetAstronautDutiesByName), correlationId: correlationId, cancellationToken: cancellationToken);
+                LogNoPeopleFound(name);
                 return new AstronautDutiesListResponse
                 {
                     Success = false,
@@ -66,7 +66,7 @@ namespace Stargate.Application.Services
                 duties.Add(response);
             }
 
-            await _loggingService.LogInformationAsync(Category, $"Retrieved {duties.Count} people with duties for search: {name}", source: nameof(GetAstronautDutiesByName), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogRetrievedPeopleWithDuties(duties.Count, name);
 
             return new AstronautDutiesListResponse
             {
@@ -74,9 +74,9 @@ namespace Stargate.Application.Services
             };
         }
 
-        public async Task<CreateAstronautDutyResponse> CreateAstronautDuty(CreateAstronautDutyResponse request, string? correlationId, CancellationToken cancellationToken)
+        public async Task<CreateAstronautDutyResponse> CreateAstronautDuty(CreateAstronautDutyResponse request, CancellationToken cancellationToken)
         {
-            await _loggingService.LogInformationAsync(Category, $"Creating astronaut duty for: {request.Name}, Title: {request.DutyTitle}, Rank: {request.Rank}", source: nameof(CreateAstronautDuty), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogCreatingAstronautDuty(request.Name, request.DutyTitle, request.Rank);
 
             // Use domain service to check if person exists
             var person = await _dutyDomainService.EnsurePersonExistsAsync(request.Name, cancellationToken);
@@ -91,7 +91,7 @@ namespace Stargate.Application.Services
 
                 await _unitOfWork.PersonAstronauts.AddAsync(person, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
-                await _loggingService.LogInformationAsync(Category, $"Created new person: {request.Name} (ID: {person.Id})", source: nameof(CreateAstronautDuty), correlationId: correlationId, cancellationToken: cancellationToken);
+                LogCreatedNewPerson(request.Name, person.Id);
             }
 
             // Get existing astronaut detail
@@ -125,7 +125,7 @@ namespace Stargate.Application.Services
             // Save all changes
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _loggingService.LogInformationAsync(Category, $"Created astronaut duty (ID: {newAstronautDuty.Id}) for {request.Name}: {request.Rank} - {request.DutyTitle}", source: nameof(CreateAstronautDuty), correlationId: correlationId, cancellationToken: cancellationToken);
+            LogCreatedAstronautDuty(newAstronautDuty.Id, request.Name, request.Rank, request.DutyTitle);
 
             return new CreateAstronautDutyResponse
             {

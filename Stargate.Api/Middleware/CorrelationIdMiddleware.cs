@@ -1,3 +1,5 @@
+using Serilog.Context;
+
 namespace Stargate.Api.Middleware
 {
     public class CorrelationIdMiddleware
@@ -17,7 +19,14 @@ namespace Stargate.Api.Middleware
 
             context.Response.Headers[CorrelationIdHeader] = correlationId;
 
-            await _next(context);
+            // Store in HttpContext.Items for request logging access
+            context.Items["CorrelationId"] = correlationId;
+
+            // Push correlation ID to Serilog LogContext for automatic enrichment
+            using (LogContext.PushProperty("CorrelationId", correlationId))
+            {
+                await _next(context);
+            }
         }
 
         private static string GetOrCreateCorrelationId(HttpContext context)

@@ -1,6 +1,9 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Context;
+using Serilog.Events;
 using Stargate.Api.Middleware;
 using Stargate.Application.Interfaces;
 using Stargate.Application.Services;
@@ -12,6 +15,26 @@ using Stargate.Repository.Interfaces;
 using Stargate.Repository.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog (skip in test environment to avoid "logger already frozen" error)
+if (!builder.Environment.IsEnvironment("IntegrationTest"))
+{
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(builder.Configuration)
+        .Enrich.FromLogContext()
+        .Enrich.WithMachineName()
+        .Enrich.WithThreadId()
+        .Enrich.WithProperty("Application", "Stargate.Api")
+        .CreateBootstrapLogger();
+
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithMachineName()
+        .Enrich.WithThreadId()
+        .Enrich.WithProperty("Application", "Stargate.Api"));
+}
 
 // Add services to the container.
 
@@ -55,7 +78,6 @@ builder.Services.AddScoped<IAstronautDutyDomainService, AstronautDutyDomainServi
 // Register Application Services
 builder.Services.AddScoped<IPersonAstronautService, PersonAstronautService>();
 builder.Services.AddScoped<IAstronautDutyService, AstronautDutyService>();
-builder.Services.AddScoped<ILoggingService, DatabaseLoggingService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 
 // Register CorrelationId Accessor
@@ -103,6 +125,36 @@ app.UseHttpsRedirection();
 
 app.UseCorrelationId();
 
+// Use Serilog request logging only in non-test environments
+if (!builder.Environment.IsEnvironment("IntegrationTest"))
+{
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000}ms";
+        options.GetLevel = (httpContext, elapsed, ex) => ex != null
+            ? LogEventLevel.Error
+            : httpContext.Response.StatusCode > 499
+                ? LogEventLevel.Error
+                : httpContext.Response.StatusCode > 399
+                    ? LogEventLevel.Warning
+                    : LogEventLevel.Information;
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+            diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+            diagnosticContext.Set("RequestPath", httpContext.Request.Path.Value);
+            diagnosticContext.Set("RequestMethod", httpContext.Request.Method);
+            diagnosticContext.Set("StatusCode", httpContext.Response.StatusCode);
+
+            // Capture CorrelationId from HttpContext.Items
+            if (httpContext.Items.TryGetValue("CorrelationId", out var correlationId))
+            {
+                diagnosticContext.Set("CorrelationId", correlationId);
+            }
+        };
+    });
+}
+
 app.UseCors("AllowAngularApp");
 
 app.UseTokenAuthentication();
@@ -111,6 +163,28 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+try
+{
+    if (!builder.Environment.IsEnvironment("IntegrationTest"))
+    {
+        Log.Information("Starting Stargate API");
+    }
+    app.Run();
+}
+catch (Exception ex)
+{
+    if (!builder.Environment.IsEnvironment("IntegrationTest"))
+    {
+        Log.Fatal(ex, "Application terminated unexpectedly");
+    }
+    throw;
+}
+finally
+{
+    if (!builder.Environment.IsEnvironment("IntegrationTest"))
+    {
+        Log.CloseAndFlush();
+    }
+}
 
 public partial class Program { }

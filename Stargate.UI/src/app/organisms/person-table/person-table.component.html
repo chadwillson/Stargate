@@ -2,13 +2,73 @@
   <table class="data-table">
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Name</th>
+        <th class="sortable" (click)="sort('personId')">
+          <span class="header-content">
+            ID
+            <span class="sort-icon">
+              <span *ngIf="isSorted('personId')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('personId')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
+        <th class="sortable" (click)="sort('name')">
+          <span class="header-content">
+            Name
+            <span class="sort-icon">
+              <span *ngIf="isSorted('name')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('name')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
         <th>Status</th>
-        <th>Current Rank</th>
-        <th>Current Duty Title</th>
-        <th>Career Start Date</th>
-        <th>Career End Date</th>
+        <th class="sortable" (click)="sort('currentRank')">
+          <span class="header-content">
+            Current Rank
+            <span class="sort-icon">
+              <span *ngIf="isSorted('currentRank')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('currentRank')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
+        <th class="sortable" (click)="sort('currentDutyTitle')">
+          <span class="header-content">
+            Current Duty Title
+            <span class="sort-icon">
+              <span *ngIf="isSorted('currentDutyTitle')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('currentDutyTitle')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
+        <th class="sortable" (click)="sort('careerStartDate')">
+          <span class="header-content">
+            Career Start Date
+            <span class="sort-icon">
+              <span *ngIf="isSorted('careerStartDate')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('careerStartDate')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
+        <th class="sortable" (click)="sort('careerEndDate')">
+          <span class="header-content">
+            Career End Date
+            <span class="sort-icon">
+              <span *ngIf="isSorted('careerEndDate')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('careerEndDate')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
         <th>Actions</th>
       </tr>
     </thead>

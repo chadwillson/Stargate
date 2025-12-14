@@ -1,0 +1,51 @@
+<div class="duty-form">
+  <h4>Add New Duty for {{ personName }}</h4>
+  <div class="form-grid">
+    <div>
+      <app-label text="Rank"></app-label>
+      <app-text-input
+        [(value)]="formData.rank"
+        placeholder="Rank"
+        [disabled]="loading">
+      </app-text-input>
+    </div>
+    <div>
+      <app-label text="Duty Title"></app-label>
+      <app-text-input
+        [(value)]="formData.dutyTitle"
+        placeholder="Duty Title"
+        [disabled]="loading">
+      </app-text-input>
+    </div>
+    <div>
+      <app-label text="Start Date"></app-label>
+      <app-text-input
+        type="date"
+        [(value)]="formData.dutyStartDate"
+        [disabled]="loading">
+      </app-text-input>
+    </div>
+    <div class="form-actions">
+      <app-button
+        kind="primary"
+        (pressed)="onSave()"
+        [disabled]="loading || !isValid">
+        Save Duty
+      </app-button>
+      <app-button
+        kind="secondary"
+        (pressed)="onCancel()"
+        [disabled]="loading">
+        Cancel
+      </app-button>
+    </div>
+  </div>
+
+  <div *ngIf="existingDuties.length > 0" class="existing-duties">
+    <h5>Existing Duties</h5>
+    <app-astronaut-duty-table
+      [duties]="existingDuties"
+      [loading]="false">
+    </app-astronaut-duty-table>
+  </div>
+</div>

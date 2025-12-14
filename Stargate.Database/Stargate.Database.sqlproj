@@ -65,8 +65,13 @@
     <Build Include="Tables\AstronautDetail.sql" />
     <Build Include="Tables\AstronautDuty.sql" />
     <Build Include="Tables\LogEntry.sql" />
+    <Build Include="Tables\Role.sql" />
+    <Build Include="Tables\User.sql" />
   </ItemGroup>
   <ItemGroup>
     <PostDeploy Include="Post-Deployment\Script.PostDeployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Stargate.Database.publish.xml" />
   </ItemGroup>
 </Project>

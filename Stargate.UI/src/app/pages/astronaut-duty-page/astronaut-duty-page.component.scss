@@ -5,41 +5,9 @@
 }
 
 .alert-danger {
-  background: #fee;
-  color: #c33;
-  border: 1px solid #fcc;
-}
-
-.search-section {
-  margin-bottom: 24px;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-
-  h3 {
-    margin-top: 0;
-    margin-bottom: 16px;
-    color: #333;
-  }
-
-  .search-row {
-    display: flex;
-    gap: 12px;
-
-    .form-control {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-
-      &:focus {
-        outline: none;
-        border-color: #4CAF50;
-        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-      }
-    }
-  }
+  background: var(--bs-danger-bg-subtle, #fee);
+  color: var(--bs-danger-text-emphasis, #c33);
+  border: 1px solid var(--bs-danger-border-subtle, #fcc);
 }
 
 .table-container {
@@ -49,28 +17,28 @@
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--table-bg, white);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
   th, td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--table-border-color, #e0e0e0);
   }
 
   th {
-    background: #f5f5f5;
+    background: var(--table-header-bg, #f5f5f5);
     font-weight: 600;
-    color: #333;
+    color: var(--table-header-color, #333);
   }
 
   td {
-    color: #212529;
+    color: var(--table-color, #212529);
     font-weight: 400;
   }
 
   tbody tr:hover {
-    background: #fafafa;
+    background: var(--table-hover-bg, #fafafa);
   }
 
   .person-row {
@@ -78,48 +46,26 @@
     transition: background-color 0.2s;
 
     &:hover {
-      background: #f5f5f5;
+      background: var(--table-hover-bg, #f5f5f5);
     }
 
     &.expanded {
-      background: #e8f5e9;
+      background: var(--table-active-bg, rgba(76, 175, 80, 0.1));
       font-weight: 500;
     }
   }
 
   .expanded-row {
     display: none;
-    background: #f9fef9;
+    background: var(--bg-surface, #f9fef9);
 
     &.visible {
       display: table-row;
     }
 
     td {
-      border-bottom: 2px solid #4CAF50;
+      border-bottom: 2px solid var(--accent, #4CAF50);
     }
-  }
-}
-
-.duties-detail {
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 8px;
-  margin: 10px 0;
-  border: 1px solid #e0e0e0;
-
-  h4 {
-    margin-top: 0;
-    margin-bottom: 16px;
-    color: #2e7d32;
-    font-size: 1.1rem;
-  }
-
-  .no-duties {
-    padding: 20px;
-    text-align: center;
-    color: #666;
-    font-style: italic;
   }
 }
 
@@ -129,98 +75,12 @@
   }
 }
 
-.duty-form {
-  padding: 20px;
-  background: #f0f8ff;
-  border-radius: 8px;
-  border: 1px solid #d0e8ff;
-
-  h4 {
-    margin-top: 0;
-    margin-bottom: 16px;
-    color: #333;
-  }
-
-  h5 {
-    margin-top: 24px;
-    margin-bottom: 12px;
-    color: #333;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 16px;
-
-    label {
-      display: block;
-      margin-bottom: 4px;
-      font-weight: 500;
-      color: #555;
-      font-size: 14px;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-
-      &:focus {
-        outline: none;
-        border-color: #4CAF50;
-        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-      }
-    }
-  }
-
-  .form-actions {
-    display: flex;
-    gap: 12px;
-    align-items: flex-end;
-  }
-}
-
-.existing-duties {
-  margin-top: 20px;
-}
-
-.duties-subtable {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
-
-  th, td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-
-  th {
-    background: #f9f9f9;
-    font-weight: 600;
-    color: #333;
-    font-size: 13px;
-  }
-
-  td {
-    color: #212529;
-    font-size: 13px;
-  }
-
-  tbody tr:hover {
-    background: #f5f5f5;
-  }
-}
-
 .empty-state, .loading-state {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--text-secondary, #666);
   font-style: italic;
-  background: white;
+  background: var(--bg-base, white);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }

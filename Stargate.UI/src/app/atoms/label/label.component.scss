@@ -1,6 +1,11 @@
 .form-label {
   display: block;
-  font-weight: 600;
-  margin-bottom: 0.35rem;
-  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.required-asterisk {
+  color: #e74c3c;
+  margin-left: 0.25rem;
 }

@@ -1,0 +1,67 @@
+<div class="card">
+  <h2 class="h5">Create Account</h2>
+  <form (ngSubmit)="onSubmit()">
+    <app-form-field
+      label="Username"
+      name="username"
+      type="text"
+      placeholder="Enter username"
+      [(value)]="model.username">
+    </app-form-field>
+
+    <app-form-field
+      label="Email"
+      name="email"
+      type="email"
+      placeholder="Enter email"
+      [(value)]="model.email">
+    </app-form-field>
+
+    <app-form-field
+      label="First Name"
+      name="firstName"
+      type="text"
+      placeholder="Enter first name"
+      [(value)]="model.firstName">
+    </app-form-field>
+
+    <app-form-field
+      label="Last Name"
+      name="lastName"
+      type="text"
+      placeholder="Enter last name"
+      [(value)]="model.lastName">
+    </app-form-field>
+
+    <app-form-field
+      label="Password"
+      name="password"
+      type="password"
+      placeholder="Enter password (min 6 characters)"
+      [(value)]="model.password">
+    </app-form-field>
+
+    <app-form-field
+      label="Confirm Password"
+      name="confirmPassword"
+      type="password"
+      placeholder="Re-enter password"
+      [(value)]="model.confirmPassword">
+    </app-form-field>
+
+    <div *ngIf="passwordError" class="alert alert-danger">{{ passwordError }}</div>
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <div class="button-group">
+      <app-button [kind]="'ghost'" (pressed)="onCancel()" [disabled]="loading">
+        Cancel
+      </app-button>
+      <app-button
+        [type]="'submit'"
+        [kind]="'primary'"
+        [disabled]="loading || !passwordsMatch">
+        {{ loading ? 'Creating...' : 'Create Account' }}
+      </app-button>
+    </div>
+  </form>
+</div>

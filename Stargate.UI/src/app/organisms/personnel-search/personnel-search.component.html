@@ -1,0 +1,18 @@
+<div class="search-section">
+  <h3>Search Personnel</h3>
+  <div class="search-row">
+    <app-text-input
+      [(value)]="searchValue"
+      (valueChange)="onSearchValueChange($event)"
+      (keyup.enter)="onKeyEnter()"
+      placeholder="Enter person name"
+      [disabled]="loading">
+    </app-text-input>
+    <app-button
+      kind="primary"
+      (pressed)="onSearch()"
+      [disabled]="loading || !searchValue">
+      Search
+    </app-button>
+  </div>
+</div>

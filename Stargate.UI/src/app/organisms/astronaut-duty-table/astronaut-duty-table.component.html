@@ -2,18 +2,54 @@
   <table class="data-table">
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Rank</th>
-        <th>Duty Title</th>
-        <th>Duty Start Date</th>
-        <th>Duty End Date</th>
+        <th class="sortable" (click)="sort('rank')">
+          <span class="header-content">
+            Rank
+            <span class="sort-icon">
+              <span *ngIf="isSorted('rank')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('rank')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
+        <th class="sortable" (click)="sort('dutyTitle')">
+          <span class="header-content">
+            Duty Title
+            <span class="sort-icon">
+              <span *ngIf="isSorted('dutyTitle')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('dutyTitle')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
+        <th class="sortable" (click)="sort('dutyStartDate')">
+          <span class="header-content">
+            Duty Start Date
+            <span class="sort-icon">
+              <span *ngIf="isSorted('dutyStartDate')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('dutyStartDate')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
+        <th class="sortable" (click)="sort('dutyEndDate')">
+          <span class="header-content">
+            Duty End Date
+            <span class="sort-icon">
+              <span *ngIf="isSorted('dutyEndDate')" class="active-icon">
+                {{ sortAscending ? '▲' : '▼' }}
+              </span>
+              <span *ngIf="!isSorted('dutyEndDate')" class="inactive-icon">▲</span>
+            </span>
+          </span>
+        </th>
       </tr>
     </thead>
     <tbody *ngIf="!loading && duties.length > 0">
       <tr *ngFor="let duty of duties">
-        <td>{{ duty.id || '-' }}</td>
-        <td>{{ duty.name }}</td>
         <td>{{ duty.rank }}</td>
         <td>{{ duty.dutyTitle }}</td>
         <td>{{ duty.dutyStartDate | date: 'short' }}</td>
@@ -22,12 +58,12 @@
     </tbody>
     <tbody *ngIf="!loading && duties.length === 0">
       <tr>
-        <td colspan="6" class="empty-state">No astronaut duties found. Use the search above to find duties by name.</td>
+        <td colspan="4" class="empty-state">No astronaut duties found.</td>
       </tr>
     </tbody>
     <tbody *ngIf="loading">
       <tr>
-        <td colspan="6" class="loading-state">Loading...</td>
+        <td colspan="4" class="loading-state">Loading...</td>
       </tr>
     </tbody>
   </table>

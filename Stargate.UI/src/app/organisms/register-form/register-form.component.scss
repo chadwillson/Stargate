@@ -1,0 +1,28 @@
+.card {
+  h2 {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.alert {
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.alert-danger {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+
+  app-button {
+    flex: 1;
+  }
+}

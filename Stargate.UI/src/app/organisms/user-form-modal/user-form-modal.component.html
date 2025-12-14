@@ -1,0 +1,122 @@
+<div class="modal-backdrop" *ngIf="isOpen">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Edit User' : 'Create New User' }}</h2>
+      <button class="close-button" (click)="onClose()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <form (ngSubmit)="onSave()">
+        <!-- Username (only for create) -->
+        <div class="form-group" *ngIf="!isEditMode">
+          <app-label [for]="'username'" [text]="'Username'" [required]="true"></app-label>
+          <app-text-input
+            [id]="'username'"
+            [name]="'username'"
+            [placeholder]="'Enter username'"
+            [(value)]="formData.username"
+            [required]="true">
+          </app-text-input>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <app-label [for]="'email'" [text]="'Email'" [required]="true"></app-label>
+          <app-text-input
+            [id]="'email'"
+            [name]="'email'"
+            [type]="'email'"
+            [placeholder]="'Enter email'"
+            [(value)]="formData.email"
+            [required]="true">
+          </app-text-input>
+        </div>
+
+        <!-- Password (Create mode) -->
+        <div class="form-group" *ngIf="!isEditMode">
+          <app-label
+            [for]="'password'"
+            [text]="'Password'"
+            [required]="true">
+          </app-label>
+          <app-text-input
+            [id]="'password'"
+            [name]="'password'"
+            [type]="'password'"
+            [placeholder]="'Enter password'"
+            [(value)]="formData.password"
+            [required]="true">
+          </app-text-input>
+        </div>
+
+        <!-- Password (Edit mode) -->
+        <div class="form-group" *ngIf="isEditMode">
+          <app-label
+            [for]="'newPassword'"
+            [text]="'New Password (leave blank to keep current)'"
+            [required]="false">
+          </app-label>
+          <app-text-input
+            [id]="'newPassword'"
+            [name]="'newPassword'"
+            [type]="'password'"
+            [placeholder]="'Enter new password'"
+            [(value)]="formData.newPassword"
+            [required]="false">
+          </app-text-input>
+        </div>
+
+        <!-- First Name -->
+        <div class="form-group">
+          <app-label [for]="'firstName'" [text]="'First Name'"></app-label>
+          <app-text-input
+            [id]="'firstName'"
+            [name]="'firstName'"
+            [placeholder]="'Enter first name'"
+            [(value)]="formData.firstName">
+          </app-text-input>
+        </div>
+
+        <!-- Last Name -->
+        <div class="form-group">
+          <app-label [for]="'lastName'" [text]="'Last Name'"></app-label>
+          <app-text-input
+            [id]="'lastName'"
+            [name]="'lastName'"
+            [placeholder]="'Enter last name'"
+            [(value)]="formData.lastName">
+          </app-text-input>
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <app-label [for]="'roleId'" [text]="'Role'" [required]="true"></app-label>
+          <app-select
+            [id]="'roleId'"
+            [name]="'roleId'"
+            [options]="roleOptions"
+            [(value)]="formData.roleId"
+            [required]="true">
+          </app-select>
+        </div>
+
+        <!-- Active Status (only for edit) -->
+        <div class="form-group checkbox-group" *ngIf="isEditMode">
+          <app-checkbox
+            [id]="'isActive'"
+            [name]="'isActive'"
+            [label]="'Active'"
+            [(checked)]="formData.isActive">
+          </app-checkbox>
+        </div>
+
+        <div class="modal-footer">
+          <app-button [kind]="'ghost'" (pressed)="onClose()">Cancel</app-button>
+          <app-button [kind]="'primary'" [type]="'submit'">
+            {{ isEditMode ? 'Update' : 'Create' }}
+          </app-button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

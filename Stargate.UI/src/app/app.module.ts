@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, ErrorHandler } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/common/http';
 
@@ -10,6 +10,7 @@ import { OrganismsModule } from './organisms/organisms.module';
 import { TemplatesModule } from './templates/templates.module';
 import { PagesModule } from './pages/pages.module';
 import { authInterceptor } from './shared/auth.interceptor';
+import { GlobalErrorHandler } from './shared/global-error-handler';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { authInterceptor } from './shared/auth.interceptor';
     PagesModule
   ],
   providers: [
-    provideHttpClient(withInterceptors([authInterceptor]))
+    provideHttpClient(withInterceptors([authInterceptor])),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler }
   ],
   bootstrap: [AppComponent]
 })

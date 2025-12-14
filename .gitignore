@@ -404,3 +404,5 @@ FodyWeavers.xsd
 *.db-wal
 /nul
 /Stargate/nul
+/Stargate.Api/nul
+/.claude/settings.local.json

@@ -13,7 +13,8 @@ export class ButtonComponent {
   @Output() pressed = new EventEmitter<void>();
 
   onClick(): void {
-    if (!this.disabled) {
+    // Only emit pressed event for type="button", not for submit buttons
+    if (!this.disabled && this.type === 'button') {
       this.pressed.emit();
     }
   }

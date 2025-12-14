@@ -26,11 +26,21 @@ namespace Stargate.Repository
         /// <param name="context">The database context to seed</param>
         public static void Seed(StargateContext context)
         {
-            // Check if already seeded
-            if (context.People.Any())
+            // Seed Person data if not exists
+            if (!context.People.Any())
             {
-                return; // Database already contains data
+                SeedPeople(context);
             }
+
+            // Seed User/Role data if not exists
+            if (!context.Roles.Any())
+            {
+                SeedUsersAndRoles(context);
+            }
+        }
+
+        private static void SeedPeople(StargateContext context)
+        {
 
             // Seed date aligned with SQL post-deployment script (2024-01-01)
             var seedDate = new DateTime(2024, 1, 1);
@@ -74,6 +84,68 @@ namespace Stargate.Repository
                 }
             };
             context.AstronautDuties.AddRange(duties);
+            context.SaveChanges();
+        }
+
+        private static void SeedUsersAndRoles(StargateContext context)
+        {
+            // Seed Role data
+            var roles = new[]
+            {
+                new RoleEntity
+                {
+                    Id = 1,
+                    Name = "Admin",
+                    Description = "Administrator with full access",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new RoleEntity
+                {
+                    Id = 2,
+                    Name = "User",
+                    Description = "Standard user with limited access",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+            context.Roles.AddRange(roles);
+            context.SaveChanges();
+
+            // Seed User data
+            // Default passwords (hashed with BCrypt at runtime):
+            // admin: Stargate123!
+            // user: Password1!
+            var users = new[]
+            {
+                new UserEntity
+                {
+                    Id = 1,
+                    Username = "admin",
+                    Email = "admin@stargate.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Stargate123!"),
+                    FirstName = "Admin",
+                    LastName = "User",
+                    RoleId = 1,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new UserEntity
+                {
+                    Id = 2,
+                    Username = "user",
+                    Email = "user@stargate.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password1!"),
+                    FirstName = "Standard",
+                    LastName = "User",
+                    RoleId = 2,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+            context.Users.AddRange(users);
             context.SaveChanges();
         }
     }

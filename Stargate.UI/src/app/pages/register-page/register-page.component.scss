@@ -1,0 +1,49 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 2rem;
+}
+
+.register-card {
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.register-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+  color: var(--text-color);
+}
+
+.register-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted-color, #666);
+  text-align: center;
+  margin: 0 0 2rem 0;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--text-color);
+
+  a {
+    color: var(--primary-color, #007bff);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

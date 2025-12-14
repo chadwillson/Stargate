@@ -6,6 +6,8 @@ namespace Stargate.Repository.Interfaces
         IAstronautDetailRepository AstronautDetails { get; }
         IAstronautDutyRepository AstronautDuties { get; }
         ILogRepository LogEntries { get; }
+        IUserRepository Users { get; }
+        IRoleRepository Roles { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync(CancellationToken cancellationToken = default);

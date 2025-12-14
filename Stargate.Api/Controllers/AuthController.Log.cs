@@ -31,4 +31,49 @@ public partial class AuthController
         Level = LogLevel.Error,
         Message = "Logout failed")]
     partial void LogLogoutError(Exception ex);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Forgot password attempt for email: {Email}")]
+    partial void LogForgotPasswordAttempt(string email);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Forgot password request for non-existent email: {Email}")]
+    partial void LogForgotPasswordUserNotFound(string email);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Password reset email sent to: {Email}")]
+    partial void LogForgotPasswordEmailSent(string email);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Forgot password failed for email: {Email}")]
+    partial void LogForgotPasswordError(Exception ex, string email);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Reset password attempt with token: {Token}")]
+    partial void LogResetPasswordAttempt(string token);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Reset password attempt with invalid token: {Token}")]
+    partial void LogResetPasswordInvalidToken(string token);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Reset password attempt with expired token: {Token}")]
+    partial void LogResetPasswordExpiredToken(string token);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Password reset successful for user: {Username}")]
+    partial void LogResetPasswordSuccess(string username);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Reset password failed for token: {Token}")]
+    partial void LogResetPasswordError(Exception ex, string token);
 }

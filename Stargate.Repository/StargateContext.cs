@@ -17,6 +17,8 @@ namespace Stargate.Repository
         public DbSet<AstronautDetailEntity> AstronautDetails { get; set; }
         public DbSet<AstronautDutyEntity> AstronautDuties { get; set; }
         public DbSet<LogEntryEntity> LogEntries { get; set; }
+        public DbSet<UserEntity> Users { get; set; }
+        public DbSet<RoleEntity> Roles { get; set; }
 
         public StargateContext(DbContextOptions<StargateContext> options)
         : base(options)

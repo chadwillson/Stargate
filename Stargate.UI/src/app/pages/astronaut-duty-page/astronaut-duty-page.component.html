@@ -1,20 +1,11 @@
 <app-default-template pageTitle="Astronaut Duty">
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <div class="search-section">
-    <h3>Search Personnel</h3>
-    <div class="search-row">
-      <input
-        [(ngModel)]="searchName"
-        placeholder="Enter person name"
-        class="form-control"
-        [disabled]="loading"
-        (keyup.enter)="searchPeople()" />
-      <app-button kind="primary" (pressed)="searchPeople()" [disabled]="loading || !searchName">
-        Search
-      </app-button>
-    </div>
-  </div>
+  <app-personnel-search
+    [(searchValue)]="searchName"
+    [loading]="loading"
+    (search)="searchPeople()">
+  </app-personnel-search>
 
   <div class="table-container">
     <table class="data-table" *ngIf="!loading && people.length > 0">
@@ -61,97 +52,22 @@
         <!-- Expanded row showing existing duties -->
         <tr *ngFor="let personWithDuties of people" class="expanded-row" [class.visible]="expandedPersonId === personWithDuties.person.id && editingPersonId !== personWithDuties.person.id">
           <td colspan="7" *ngIf="expandedPersonId === personWithDuties.person.id && editingPersonId !== personWithDuties.person.id">
-            <div class="duties-detail">
-              <h4>Duty History for {{ personWithDuties.person.name }}</h4>
-              <div *ngIf="personWithDuties.astronautDuties.length > 0" class="existing-duties">
-                <table class="duties-subtable">
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Title</th>
-                      <th>Start Date</th>
-                      <th>End Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let duty of personWithDuties.astronautDuties">
-                      <td>{{ duty.rank }}</td>
-                      <td>{{ duty.dutyTitle }}</td>
-                      <td>{{ duty.dutyStartDate | date: 'short' }}</td>
-                      <td>{{ duty.dutyEndDate ? (duty.dutyEndDate | date: 'short') : (duty.dutyTitle === 'RETIRED' ? '-' : 'Active') }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div *ngIf="personWithDuties.astronautDuties.length === 0" class="no-duties">
-                No duty history available.
-              </div>
-            </div>
+            <app-duty-history-detail
+              [personName]="personWithDuties.person.name"
+              [duties]="personWithDuties.astronautDuties">
+            </app-duty-history-detail>
           </td>
         </tr>
         <!-- Duty form row -->
         <tr *ngFor="let personWithDuties of people" class="duty-form-row" [class.hidden]="editingPersonId !== personWithDuties.person.id">
           <td colspan="7" *ngIf="editingPersonId === personWithDuties.person.id">
-            <div class="duty-form">
-              <h4>Add New Duty for {{ personWithDuties.person.name }}</h4>
-              <div class="form-grid">
-                <div>
-                  <label>Rank</label>
-                  <input
-                    [(ngModel)]="newDuty.rank"
-                    placeholder="Rank"
-                    class="form-control"
-                    [disabled]="loading" />
-                </div>
-                <div>
-                  <label>Duty Title</label>
-                  <input
-                    [(ngModel)]="newDuty.dutyTitle"
-                    placeholder="Duty Title"
-                    class="form-control"
-                    [disabled]="loading" />
-                </div>
-                <div>
-                  <label>Start Date</label>
-                  <input
-                    type="date"
-                    [(ngModel)]="newDuty.dutyStartDate"
-                    class="form-control"
-                    [disabled]="loading" />
-                </div>
-                <div class="form-actions">
-                  <app-button
-                    kind="primary"
-                    (pressed)="onCreateDuty(personWithDuties.person.name)"
-                    [disabled]="loading || !newDuty.rank || !newDuty.dutyTitle || !newDuty.dutyStartDate">
-                    Save Duty
-                  </app-button>
-                </div>
-              </div>
-              
-              <!-- Show existing duties for this person -->
-              <div *ngIf="personWithDuties.astronautDuties.length > 0" class="existing-duties">
-                <h5>Existing Duties</h5>
-                <table class="duties-subtable">
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Title</th>
-                      <th>Start Date</th>
-                      <th>End Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let duty of personWithDuties.astronautDuties">
-                      <td>{{ duty.rank }}</td>
-                      <td>{{ duty.dutyTitle }}</td>
-                      <td>{{ duty.dutyStartDate | date: 'short' }}</td>
-                      <td>{{ duty.dutyEndDate ? (duty.dutyEndDate | date: 'short') : (duty.dutyTitle === 'RETIRED' ? '-' : 'Active') }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <app-astronaut-duty-form
+              [personName]="personWithDuties.person.name"
+              [existingDuties]="personWithDuties.astronautDuties"
+              [loading]="loading"
+              (save)="onCreateDuty(personWithDuties.person.name, $event)"
+              (cancel)="cancelEditing()">
+            </app-astronaut-duty-form>
           </td>
         </tr>
       </tbody>

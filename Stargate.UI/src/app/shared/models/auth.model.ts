@@ -9,3 +9,12 @@ export interface LoginResponse extends BaseResponse {
   token?: string;
   username?: string;
 }
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}

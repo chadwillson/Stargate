@@ -1,0 +1,390 @@
+/**
+ * Dark Mode Table Styles
+ * Based on ComponentLibraryAngular best practices
+ */
+
+// Smooth transitions for theme switching
+:root {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Apply transitions to tables
+table,
+.data-table,
+.table {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  th, td {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+// Respect user's motion preferences
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// Light Mode Default Colors
+body.light-theme,
+body[data-theme="light"],
+:root {
+  // General light mode colors
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --bg-base: #ffffff;
+  --bg-surface: #f9f9f9;
+  --border: #e0e0e0;
+  --accent: #4CAF50;
+  --accent-hover: #45a049;
+
+  // Table-specific light mode colors
+  --table-bg: #ffffff;
+  --table-color: #212529;
+  --table-border-color: #e0e0e0;
+  --table-striped-bg: rgba(0, 0, 0, 0.02);
+  --table-hover-bg: #fafafa;
+  --table-active-bg: rgba(76, 175, 80, 0.1);
+  --table-header-bg: #f5f5f5;
+  --table-header-color: #333;
+}
+
+// Dark Mode Table Styles
+body.dark-theme,
+body[data-theme="dark"],
+[data-bs-theme='dark'] {
+  // Table-specific dark mode colors (matching ComponentLibraryAngular)
+  --table-bg: transparent;
+  --table-color: #e0e0e0;
+  --table-border-color: #404040;
+  --table-striped-bg: rgba(255, 255, 255, 0.05);
+  --table-hover-bg: rgba(255, 255, 255, 0.075);
+  --table-active-bg: rgba(255, 255, 255, 0.15);
+  --table-header-bg: #1e1e1e;
+  --table-header-color: #e0e0e0;
+
+  // General dark mode colors
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --bg-base: #1e1e1e;
+  --bg-surface: #2b2d31;
+  --border: #404040;
+  --accent: #6ea8fe;
+  --accent-hover: #8bb9fe;
+
+  // Apply to all table types
+  table,
+  .data-table,
+  .table {
+    color: var(--table-color);
+    background-color: var(--table-bg);
+    border-color: var(--table-border-color);
+
+    // Table header
+    thead {
+      th {
+        background-color: var(--table-header-bg) !important;
+        color: var(--table-header-color) !important;
+        border-color: var(--table-border-color);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 0.75rem 1rem;
+
+        // Sortable header styles
+        &.sortable {
+          &:hover {
+            background-color: var(--table-hover-bg) !important;
+
+            .inactive-icon {
+              color: #e0e0e0;
+            }
+          }
+
+          .sort-icon {
+            .active-icon {
+              color: #6ea8fe;
+            }
+
+            .inactive-icon {
+              color: #a0a0a0;
+              opacity: 0.5;
+            }
+          }
+        }
+      }
+    }
+
+    // Table body
+    tbody {
+      tr {
+        border-color: var(--table-border-color);
+        background-color: var(--table-bg);
+
+        &:hover {
+          background-color: var(--table-hover-bg);
+        }
+
+        &.active {
+          background-color: var(--table-active-bg);
+        }
+
+        td {
+          color: var(--table-color);
+          border-color: var(--table-border-color);
+          padding: 0.75rem 1rem;
+        }
+      }
+
+      // Striped rows
+      tr:nth-of-type(odd) {
+        background-color: var(--table-striped-bg);
+
+        &:hover {
+          background-color: var(--table-hover-bg);
+        }
+      }
+    }
+
+    // Table footer
+    tfoot {
+      th, td {
+        background-color: var(--table-header-bg);
+        color: var(--table-header-color);
+        border-color: var(--table-border-color);
+      }
+    }
+  }
+
+  // Status badges in tables
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &.astronaut {
+      background-color: rgba(74, 123, 167, 0.3);
+      color: #8bb9fe;
+      border: 1px solid rgba(74, 123, 167, 0.5);
+    }
+
+    &.civilian {
+      background-color: rgba(160, 160, 160, 0.3);
+      color: #c0c0c0;
+      border: 1px solid rgba(160, 160, 160, 0.5);
+    }
+
+    &.active {
+      background-color: rgba(74, 138, 106, 0.3);
+      color: #75b798;
+      border: 1px solid rgba(74, 138, 106, 0.5);
+    }
+
+    &.inactive {
+      background-color: rgba(184, 92, 99, 0.3);
+      color: #ea868f;
+      border: 1px solid rgba(184, 92, 99, 0.5);
+    }
+  }
+
+  // Empty and loading states
+  .empty-state,
+  .loading-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary, #b5bac1);
+    font-style: italic;
+  }
+
+  // Table wrapper
+  .table-wrapper {
+    background-color: var(--bg-surface, #383a40);
+    border: 1px solid var(--table-border-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  // Form controls within tables (for edit mode)
+  table .form-control,
+  .data-table .form-control {
+    background-color: var(--bg-base, #2b2d31);
+    color: var(--text-primary, #e3e5e8);
+    border-color: var(--border, #4e5058);
+
+    &:focus {
+      background-color: var(--bg-surface, #383a40);
+      border-color: var(--accent, #5865f2);
+      box-shadow: 0 0 0 0.25rem rgba(88, 101, 242, 0.25);
+      color: var(--text-primary, #e3e5e8);
+    }
+
+    &::placeholder {
+      color: var(--text-secondary, #b5bac1);
+      opacity: 0.7;
+    }
+  }
+}
+
+// Light Mode Table Styles
+body.light-theme,
+body[data-theme="light"] {
+  // Table-specific light mode colors
+  --table-bg: #ffffff;
+  --table-color: var(--text-primary, #1a1a1a);
+  --table-border-color: var(--border, #e0e0e0);
+  --table-striped-bg: rgba(0, 0, 0, 0.02);
+  --table-hover-bg: rgba(0, 0, 0, 0.075);
+  --table-active-bg: rgba(0, 0, 0, 0.1);
+  --table-header-bg: #e8e8e8;
+  --table-header-color: var(--text-primary, #1a1a1a);
+
+  // Apply to all table types
+  table,
+  .data-table,
+  .table {
+    color: var(--table-color);
+    background-color: var(--table-bg);
+    border-color: var(--table-border-color);
+
+    // Table header
+    thead {
+      th {
+        background-color: var(--table-header-bg);
+        color: var(--table-header-color);
+        border-color: var(--table-border-color);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 0.75rem 1rem;
+      }
+    }
+
+    // Table body
+    tbody {
+      tr {
+        border-color: var(--table-border-color);
+        background-color: var(--table-bg);
+
+        &:hover {
+          background-color: var(--table-hover-bg);
+        }
+
+        &.active {
+          background-color: var(--table-active-bg);
+        }
+
+        td {
+          color: var(--table-color);
+          border-color: var(--table-border-color);
+          padding: 0.75rem 1rem;
+        }
+      }
+
+      // Striped rows
+      tr:nth-of-type(odd) {
+        background-color: var(--table-striped-bg);
+
+        &:hover {
+          background-color: var(--table-hover-bg);
+        }
+      }
+    }
+
+    // Table footer
+    tfoot {
+      th, td {
+        background-color: var(--table-header-bg);
+        color: var(--table-header-color);
+        border-color: var(--table-border-color);
+      }
+    }
+  }
+
+  // Status badges in tables (light mode)
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &.astronaut {
+      background-color: rgba(37, 99, 235, 0.1);
+      color: #1d4ed8;
+      border: 1px solid rgba(37, 99, 235, 0.3);
+    }
+
+    &.civilian {
+      background-color: rgba(0, 0, 0, 0.1);
+      color: #4b5563;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+    }
+
+    &.active {
+      background-color: rgba(22, 163, 74, 0.1);
+      color: #15803d;
+      border: 1px solid rgba(22, 163, 74, 0.3);
+    }
+
+    &.inactive {
+      background-color: rgba(220, 38, 38, 0.1);
+      color: #b91c1c;
+      border: 1px solid rgba(220, 38, 38, 0.3);
+    }
+  }
+
+  // Empty and loading states
+  .empty-state,
+  .loading-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary, #666666);
+    font-style: italic;
+  }
+
+  // Table wrapper
+  .table-wrapper {
+    background-color: #ffffff;
+    border: 1px solid var(--table-border-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  // Form controls within tables (for edit mode)
+  table .form-control,
+  .data-table .form-control {
+    background-color: #ffffff;
+    color: var(--text-primary, #1a1a1a);
+    border-color: var(--border, #e0e0e0);
+
+    &:focus {
+      background-color: #ffffff;
+      border-color: var(--accent, #2563eb);
+      box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.1);
+      color: var(--text-primary, #1a1a1a);
+    }
+
+    &::placeholder {
+      color: var(--text-secondary, #666666);
+      opacity: 0.7;
+    }
+  }
+}

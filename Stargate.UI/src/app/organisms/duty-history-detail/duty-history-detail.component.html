@@ -1,0 +1,12 @@
+<div class="duties-detail">
+  <h4>Duty History for {{ personName }}</h4>
+  <div *ngIf="duties.length > 0" class="existing-duties">
+    <app-astronaut-duty-table
+      [duties]="duties"
+      [loading]="false">
+    </app-astronaut-duty-table>
+  </div>
+  <div *ngIf="duties.length === 0" class="no-duties">
+    No duty history available.
+  </div>
+</div>

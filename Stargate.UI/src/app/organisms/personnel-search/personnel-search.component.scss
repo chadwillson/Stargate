@@ -1,0 +1,23 @@
+.search-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: var(--bg-surface, #f9f9f9);
+  border-radius: 8px;
+  border: 1px solid var(--border, transparent);
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--text-primary, #333);
+  }
+
+  .search-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+
+    app-text-input {
+      flex: 1;
+    }
+  }
+}

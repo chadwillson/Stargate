@@ -60,4 +60,8 @@ export class AppComponent implements OnInit, OnDestroy {
   get isDarkMode(): boolean {
     return this.currentTheme === 'dark';
   }
+
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
 }

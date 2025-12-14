@@ -1,6 +1,9 @@
+using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Context;
 using Serilog.Events;
@@ -79,7 +82,9 @@ builder.Services.AddScoped<IAstronautDutyDomainService, AstronautDutyDomainServi
 builder.Services.AddScoped<IPersonAstronautService, PersonAstronautService>();
 builder.Services.AddScoped<IAstronautDutyService, AstronautDutyService>();
 builder.Services.AddScoped<ITestDataService, TestDataService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Register CorrelationId Accessor
 builder.Services.AddScoped<ICorrelationIdAccessor, CorrelationIdAccessor>();
@@ -87,6 +92,31 @@ builder.Services.AddScoped<ICorrelationIdAccessor, CorrelationIdAccessor>();
 // Register Validators
 builder.Services.AddValidatorsFromAssemblyContaining<PersonRequestValidator>();
 builder.Services.AddFluentValidationAutoValidation();
+
+// Configure JWT Authentication
+var jwtSecretKey = builder.Configuration["Jwt:SecretKey"] ?? "StargateSecretKeyForJWT2024-MinimumLength32Chars!";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "StargateAPI";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "StargateUI";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSecretKey)),
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -110,12 +140,18 @@ if (builder.Environment.IsDevelopment() && databaseProvider == "Sqlite")
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<StargateContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    // Ensure database is created
+    // Force delete and recreate to ensure all tables exist
+    logger.LogInformation("Recreating SQLite database...");
+    context.Database.EnsureDeleted();
     context.Database.EnsureCreated();
+    logger.LogInformation("Database created successfully");
 
     // Seed initial data
+    logger.LogInformation("Seeding database...");
     DatabaseSeeder.Seed(context);
+    logger.LogInformation("Database seeded successfully");
 }
 
 // Configure the HTTP request pipeline.
@@ -158,8 +194,7 @@ if (!builder.Environment.IsEnvironment("IntegrationTest"))
 
 app.UseCors("AllowAngularApp");
 
-app.UseTokenAuthentication();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

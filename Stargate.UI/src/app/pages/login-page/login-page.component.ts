@@ -11,13 +11,21 @@ import { LoginRequest } from '../../shared/models';
 })
 export class LoginPageComponent {
   error: string | null = null;
+  success: string | null = null;
   loading = false;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) {
+    // Check if user just registered
+    this.route.queryParams.subscribe(params => {
+      if (params['registered'] === 'true') {
+        this.success = 'Account created successfully! Please sign in.';
+      }
+    });
+  }
 
   onSubmit(credentials: LoginRequest): void {
     this.error = null;

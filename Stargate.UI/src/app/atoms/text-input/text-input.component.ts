@@ -7,11 +7,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   standalone: false
 })
 export class TextInputComponent {
+  @Input() id = '';
   @Input() type: string = 'text';
   @Input() name = '';
   @Input() placeholder = '';
   @Input() value = '';
   @Input() disabled = false;
+  @Input() required = false;
   @Output() valueChange = new EventEmitter<string>();
 
   onInput(event: Event): void {

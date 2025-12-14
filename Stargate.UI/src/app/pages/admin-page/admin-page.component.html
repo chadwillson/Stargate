@@ -1,0 +1,27 @@
+<app-default-template pageTitle="Admin Dashboard">
+  <ng-container page-actions>
+    <app-button [kind]="'primary'" (pressed)="onCreateUser()">
+      Create User
+    </app-button>
+  </ng-container>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+
+  <app-user-management-table
+    [users]="users"
+    [loading]="loading"
+    (editUser)="onEditUser($event)"
+    (deleteUser)="onDeleteUser($event)"
+    (refreshUsers)="onRefreshUsers()">
+  </app-user-management-table>
+
+  <app-user-form-modal
+    [isOpen]="isModalOpen"
+    [user]="selectedUser"
+    [roles]="roles"
+    (close)="onModalClose()"
+    (save)="onModalSave($event)">
+  </app-user-form-modal>
+</app-default-template>

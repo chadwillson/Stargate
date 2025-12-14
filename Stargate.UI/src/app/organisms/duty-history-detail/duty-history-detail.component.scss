@@ -1,0 +1,25 @@
+.duties-detail {
+  padding: 20px;
+  background: var(--bg-base, #ffffff);
+  border-radius: 8px;
+  margin: 10px 0;
+  border: 1px solid var(--border, #e0e0e0);
+
+  h4 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--accent, #2e7d32);
+    font-size: 1.1rem;
+  }
+
+  .existing-duties {
+    margin-top: 12px;
+  }
+
+  .no-duties {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary, #666);
+    font-style: italic;
+  }
+}

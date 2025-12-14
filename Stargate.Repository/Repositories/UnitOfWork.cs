@@ -12,6 +12,8 @@ namespace Stargate.Repository.Repositories
         private IAstronautDetailRepository? _astronautDetails;
         private IAstronautDutyRepository? _astronautDuties;
         private ILogRepository? _logEntries;
+        private IUserRepository? _users;
+        private IRoleRepository? _roles;
 
         public UnitOfWork(StargateContext context)
         {
@@ -36,6 +38,16 @@ namespace Stargate.Repository.Repositories
         public ILogRepository LogEntries
         {
             get { return _logEntries ??= new LogRepository(_context); }
+        }
+
+        public IUserRepository Users
+        {
+            get { return _users ??= new UserRepository(_context); }
+        }
+
+        public IRoleRepository Roles
+        {
+            get { return _roles ??= new RoleRepository(_context); }
         }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

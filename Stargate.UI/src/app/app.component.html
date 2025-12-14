@@ -7,6 +7,7 @@
       <nav class="nav-links" *ngIf="isAuthenticated">
         <a routerLink="/people" routerLinkActive="active">Personnel</a>
         <a routerLink="/astronaut-duties" routerLinkActive="active">Astronaut Duty</a>
+        <a routerLink="/admin" routerLinkActive="active" *ngIf="isAdmin">Admin</a>
       </nav>
       <app-button kind="secondary" (pressed)="toggleTheme()">
         {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}

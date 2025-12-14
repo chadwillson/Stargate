@@ -4,6 +4,10 @@
       <h1 class="login-title">Stargate Portal</h1>
       <p class="login-subtitle">Please sign in to continue</p>
 
+      <div *ngIf="success" class="success-message">
+        {{ success }}
+      </div>
+
       <div *ngIf="error" class="error-message">
         {{ error }}
       </div>
@@ -13,6 +17,11 @@
         [error]="error"
         (submitAuth)="onSubmit($event)">
       </app-auth-form>
+
+      <div class="account-links">
+        <a routerLink="/register" class="create-account-link">Create account</a>
+        <a routerLink="/forgot-password" class="forgot-password-link">Forgot password?</a>
+      </div>
 
       <div *ngIf="loading" class="loading-overlay">
         <p>Authenticating...</p>

@@ -1,0 +1,37 @@
+.duty-form {
+  padding: 20px;
+  background: var(--bg-surface, #f0f8ff);
+  border-radius: 8px;
+  border: 1px solid var(--border, #d0e8ff);
+
+  h4 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: var(--text-primary, #333);
+    font-size: 1.1rem;
+  }
+
+  h5 {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: var(--text-primary, #333);
+    font-size: 1rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .existing-duties {
+    margin-top: 20px;
+  }
+}

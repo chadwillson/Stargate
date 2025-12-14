@@ -1,0 +1,127 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">User Management</h5>
+    <app-button [kind]="'secondary'" (pressed)="onRefresh()" [disabled]="loading">
+      <span *ngIf="!loading">Refresh</span>
+      <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status"></span>
+    </app-button>
+  </div>
+  <div class="card-body">
+    <div *ngIf="loading && users.length === 0" class="text-center py-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading users...</p>
+    </div>
+
+    <div *ngIf="!loading && users.length === 0" class="text-center py-5">
+      <p>No users found.</p>
+    </div>
+
+    <table *ngIf="users.length > 0" class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sort('username')">
+            <span class="header-content">
+              Username
+              <span class="sort-icon">
+                <span *ngIf="isSorted('username')" class="active-icon">
+                  {{ sortAscending ? '▲' : '▼' }}
+                </span>
+                <span *ngIf="!isSorted('username')" class="inactive-icon">▲</span>
+              </span>
+            </span>
+          </th>
+          <th class="sortable" (click)="sort('email')">
+            <span class="header-content">
+              Email
+              <span class="sort-icon">
+                <span *ngIf="isSorted('email')" class="active-icon">
+                  {{ sortAscending ? '▲' : '▼' }}
+                </span>
+                <span *ngIf="!isSorted('email')" class="inactive-icon">▲</span>
+              </span>
+            </span>
+          </th>
+          <th class="sortable" (click)="sort('firstName')">
+            <span class="header-content">
+              Name
+              <span class="sort-icon">
+                <span *ngIf="isSorted('firstName')" class="active-icon">
+                  {{ sortAscending ? '▲' : '▼' }}
+                </span>
+                <span *ngIf="!isSorted('firstName')" class="inactive-icon">▲</span>
+              </span>
+            </span>
+          </th>
+          <th class="sortable" (click)="sort('roleName')">
+            <span class="header-content">
+              Role
+              <span class="sort-icon">
+                <span *ngIf="isSorted('roleName')" class="active-icon">
+                  {{ sortAscending ? '▲' : '▼' }}
+                </span>
+                <span *ngIf="!isSorted('roleName')" class="inactive-icon">▲</span>
+              </span>
+            </span>
+          </th>
+          <th class="sortable" (click)="sort('isActive')">
+            <span class="header-content">
+              Status
+              <span class="sort-icon">
+                <span *ngIf="isSorted('isActive')" class="active-icon">
+                  {{ sortAscending ? '▲' : '▼' }}
+                </span>
+                <span *ngIf="!isSorted('isActive')" class="inactive-icon">▲</span>
+              </span>
+            </span>
+          </th>
+          <th class="sortable" (click)="sort('lastLoginAt')">
+            <span class="header-content">
+              Last Login
+              <span class="sort-icon">
+                <span *ngIf="isSorted('lastLoginAt')" class="active-icon">
+                  {{ sortAscending ? '▲' : '▼' }}
+                </span>
+                <span *ngIf="!isSorted('lastLoginAt')" class="inactive-icon">▲</span>
+              </span>
+            </span>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td><strong>{{ user.username }}</strong></td>
+          <td>{{ user.email }}</td>
+          <td>{{ (user.firstName || '') + ' ' + (user.lastName || '') }}</td>
+          <td>
+            <span class="badge" [ngClass]="user.roleName === 'Admin' ? 'bg-danger' : 'bg-info'">
+              {{ user.roleName }}
+            </span>
+          </td>
+          <td>
+            <span [ngClass]="getStatusBadgeClass(user.isActive)">
+              {{ getStatusText(user.isActive) }}
+            </span>
+          </td>
+          <td>{{ formatDate(user.lastLoginAt) }}</td>
+          <td class="action-buttons">
+            <app-button
+              [kind]="'primary'"
+              (pressed)="onEdit(user)"
+              [disabled]="loading">
+              Edit
+            </app-button>
+            <app-button
+              [kind]="'ghost'"
+              (pressed)="onDelete(user)"
+              [disabled]="loading">
+              Delete
+            </app-button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

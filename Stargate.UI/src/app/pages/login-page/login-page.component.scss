@@ -32,6 +32,16 @@
   margin: 0 0 2rem 0;
 }
 
+.success-message {
+  background: #efe;
+  border: 1px solid #cfc;
+  color: #363;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
 .error-message {
   background: #fee;
   border: 1px solid #fcc;
@@ -40,6 +50,34 @@
   border-radius: 4px;
   margin-bottom: 1rem;
   font-size: 0.875rem;
+}
+
+.account-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  position: relative;
+  z-index: 1;
+
+  a {
+    color: var(--primary-color, #007bff);
+    text-decoration: none;
+    font-size: 0.875rem;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .create-account-link {
+    font-weight: 500;
+  }
+
+  .forgot-password-link {
+    // Align to right
+  }
 }
 
 .loading-overlay {
@@ -53,6 +91,7 @@
   justify-content: center;
   align-items: center;
   border-radius: 8px;
+  z-index: 10;
 
   p {
     font-size: 1rem;

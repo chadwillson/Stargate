@@ -1,8 +1,10 @@
 <input
+  [id]="id"
   [type]="type"
   [name]="name"
   [attr.placeholder]="placeholder"
   [value]="value"
   [disabled]="disabled"
+  [required]="required"
   (input)="onInput($event)"
   class="form-control" />

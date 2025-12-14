@@ -1,0 +1,12 @@
+<select
+  [id]="id"
+  [name]="name"
+  [disabled]="disabled"
+  [required]="required"
+  [value]="value"
+  (change)="onChange($event)"
+  class="select-input">
+  <option *ngFor="let option of options" [value]="option.value">
+    {{ option.label }}
+  </option>
+</select>

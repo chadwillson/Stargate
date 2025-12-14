@@ -1,0 +1,19 @@
+<app-default-template>
+  <div class="register-container">
+    <div class="register-card">
+      <h1 class="register-title">Stargate Portal</h1>
+      <p class="register-subtitle">Create your account</p>
+
+      <app-register-form
+        [error]="error"
+        [loading]="loading"
+        (submitRegistration)="onSubmit($event)"
+        (cancel)="goToLogin()">
+      </app-register-form>
+
+      <div class="login-link">
+        Already have an account? <a routerLink="/login">Sign in</a>
+      </div>
+    </div>
+  </div>
+</app-default-template>

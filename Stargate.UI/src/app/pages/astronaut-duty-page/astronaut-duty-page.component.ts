@@ -73,8 +73,8 @@ export class AstronautDutyPageComponent implements OnInit {
     this.error = null;
   }
 
-  onCreateDuty(personName: string): void {
-    if (!this.newDuty.rank || !this.newDuty.dutyTitle || !this.newDuty.dutyStartDate) {
+  onCreateDuty(personName: string, formData: Partial<CreateAstronautDutyRequest>): void {
+    if (!formData.rank || !formData.dutyTitle || !formData.dutyStartDate) {
       this.error = 'Please fill in all required fields';
       return;
     }
@@ -82,9 +82,9 @@ export class AstronautDutyPageComponent implements OnInit {
     this.loading = true;
     const dutyRequest: CreateAstronautDutyRequest = {
       name: personName,
-      rank: this.newDuty.rank,
-      dutyTitle: this.newDuty.dutyTitle,
-      dutyStartDate: this.newDuty.dutyStartDate
+      rank: formData.rank,
+      dutyTitle: formData.dutyTitle,
+      dutyStartDate: formData.dutyStartDate
     };
 
     this.dutyApi.createAstronautDuty(dutyRequest).subscribe({

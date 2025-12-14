@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { PersonRequest, PersonResponse } from '../../shared/models';
 
+type SortColumn = 'personId' | 'name' | 'currentRank' | 'currentDutyTitle' | 'careerStartDate' | 'careerEndDate';
+
 @Component({
   selector: 'app-person-table',
   templateUrl: './person-table.component.html',
@@ -17,6 +19,8 @@ export class PersonTableComponent {
   @Output() cancelEdit = new EventEmitter<void>();
 
   editForm: Partial<PersonRequest> = {};
+  sortColumn: SortColumn | null = null;
+  sortAscending: boolean = true;
 
   onEdit(person: PersonResponse): void {
     this.editForm = { id: person.personId, name: person.name };
@@ -41,5 +45,49 @@ export class PersonTableComponent {
   hasAstronautRecords(person: PersonResponse): boolean {
     // A person has astronaut records if they have any of these fields set
     return !!(person.currentRank || person.currentDutyTitle || person.careerStartDate);
+  }
+
+  sort(column: SortColumn): void {
+    if (this.sortColumn === column) {
+      this.sortAscending = !this.sortAscending;
+    } else {
+      this.sortColumn = column;
+      this.sortAscending = true;
+    }
+
+    this.people.sort((a, b) => {
+      let aValue: any = a[column];
+      let bValue: any = b[column];
+
+      // Handle null/undefined values
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Handle dates
+      if (column === 'careerStartDate' || column === 'careerEndDate') {
+        aValue = aValue ? new Date(aValue).getTime() : 0;
+        bValue = bValue ? new Date(bValue).getTime() : 0;
+      }
+
+      // Handle numbers
+      if (column === 'personId') {
+        aValue = Number(aValue);
+        bValue = Number(bValue);
+      }
+
+      // Compare
+      let comparison = 0;
+      if (aValue > bValue) {
+        comparison = 1;
+      } else if (aValue < bValue) {
+        comparison = -1;
+      }
+
+      return this.sortAscending ? comparison : -comparison;
+    });
+  }
+
+  isSorted(column: SortColumn): boolean {
+    return this.sortColumn === column;
   }
 }
